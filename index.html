@@ -383,42 +383,36 @@
             </div>
         </header>
 
-<main class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4 md:py-8">
-    <!-- Modern Market Overview Cards -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <!-- Bitcoin Card -->
-        <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl p-4 text-white shadow-lg hover:shadow-xl transition-all duration-300">
-            <div class="flex items-center justify-between mb-3">
-                <div class="flex items-center space-x-2">
-                    <div class="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
-                        <!-- Çalışan Bitcoin SVG -->
-                        <svg class="w-5 h-5" viewBox="0 0 4091.27 4091.73" fill="currentColor">
-                            <g>
-                                <path fill="#F7931A" d="M4030.06 2540.77c-273.24,1096.01 -1383.32,1763.02 -2479.46,1489.71 -1095.68,-273.24 -1762.69,-1383.39 -1489.33,-2479.31 273.12,-1096.13 1383.2,-1763.19 2479,-1489.95 1096.06,273.24 1763.03,1383.51 1489.76,2479.57l0.02 -0.02z"/>
-                                <path fill="white" d="M2947.77 1754.38c40.72,-272.26 -166.56,-418.61 -450,-516.24l91.95 -368.8 -224.5 -55.94 -89.51 359.09c-59.02,-14.72 -119.63,-28.59 -179.87,-42.34l90.16 -361.46 -224.36 -55.94 -92 368.68c-48.84,-11.12 -96.81,-22.11 -143.35,-33.69l0.26 -1.16 -309.59 -77.31 -59.72 239.78c0,0 166.56,38.18 163.05,40.53 90.91,22.69 107.35,82.87 104.62,130.57l-104.74 420.15c6.26,1.59 14.38,3.89 23.34,7.49 -7.49,-1.86 -15.46,-3.89 -23.73,-5.87l-146.81 588.57c-11.11,27.62 -39.31,69.07 -102.87,53.33 2.25,3.26 -163.17,-40.72 -163.17,-40.72l-111.46 256.98 292.15 72.83c54.35,13.63 107.61,27.89 160.06,41.3l-92.9 373.03 224.24 55.94 92 -369.07c61.26,16.63 120.71,31.97 178.91,46.43l-91.69 367.33 224.51 55.94 92.89 -372.33c382.82,72.45 670.67,43.24 791.83,-303.02 97.63,-278.78 -4.86,-439.58 -206.26,-544.44 146.69,-33.83 257.18,-130.31 286.64,-329.61l-0.07 -0.05zm-512.93 719.26c-69.38,278.78 -538.76,128.08 -690.94,90.29l123.28 -494.2c152.17,37.99 640.17,113.17 567.67,403.91zm69.43 -723.3c-63.29,253.58 -453.96,124.75 -580.69,93.16l111.77 -448.21c126.73,31.59 534.85,90.55 468.94,355.05l-0.02 0z"/>
-                            </g>
-                        </svg>
-                    </div>
-                    <div>
-                        <p class="text-xs font-medium opacity-90">Bitcoin</p>
-                        <p class="text-xl font-bold" id="btcPrice">$0</p>
-                    </div>
-                </div>
-                <div class="text-right">
-                    <div class="flex items-center space-x-1">
-                        <svg class="w-4 h-4" id="btcTrendIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
-                        </svg>
-                        <span class="text-sm font-bold" id="btcChange">0%</span>
-                    </div>
-                    <div class="w-16 h-8 mt-2">
-                        <div class="h-full bg-white/20 rounded" id="btcSparkline"></div>
+        <main class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4 md:py-8">
+            <!-- Modern Market Overview Cards -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                <!-- Bitcoin Card -->
+                <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl p-4 text-white shadow-lg hover:shadow-xl transition-all duration-300">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.568 8.16c-.396 2.538-2.096 2.54-4.245 2.046l.608-2.453c.852.21 1.741.414 1.876-.067.145-.515-.45-.689-.958-.78l.52-2.097c.608.152 1.238.311 1.335-.17.103-.512-.436-.66-.897-.743l.388-1.564-1.538-.382-.381 1.535c-.403-.099-.815-.191-1.226-.283l.385-1.548-1.538-.383-.388 1.564-.997-.239-.598 2.405 1.154.287c.431.107.509.392.496.621l-1.496 6.03c-.113.283-.398.709-.906.548l-1.158-.288-.889 2.587 1.492.37c.278.069.55.141.818.209l-.393 1.586 1.538.382.388-1.564c.421.114.829.219 1.23.318l-.385 1.548 1.538.383.393-1.582c2.332.441 4.084.263 4.82-1.849.594-1.698-.03-2.678-1.256-3.315.894-.206 1.566-.793 1.746-2.006z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-xs font-medium opacity-90">Bitcoin</p>
+                                <p class="text-xl font-bold" id="btcPrice">$0</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="flex items-center space-x-1">
+                                <svg class="w-4 h-4" id="btcTrendIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                                </svg>
+                                <span class="text-sm font-bold" id="btcChange">0%</span>
+                            </div>
+                            <div class="w-16 h-8 mt-2">
+                                <div class="h-full bg-white/20 rounded" id="btcSparkline"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-
 
                 <!-- Ethereum Card -->
                 <div class="bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl p-4 text-white shadow-lg hover:shadow-xl transition-all duration-300">
@@ -622,8 +616,13 @@
                         </div>
                         
                         <div class="chart-container h-64 md:h-96" id="tradingViewContainer" style="display: none;">
-                            <div class="tradingview-widget-container h-full w-full">
-                                <div class="tradingview-widget-container__widget h-full w-full" id="tradingview_widget"></div>
+                            <div class="tradingview-widget-container" style="height:100%;width:100%">
+                                <div class="tradingview-widget-container__widget" style="height:calc(100% - 32px);width:100%" id="tradingview_widget"></div>
+                                <div class="tradingview-widget-copyright">
+                                    <a href="https://www.tradingview.com/" rel="noopener nofollow" target="_blank">
+                                        <span class="text-blue-600 dark:text-blue-400 text-xs">Advanced Charts by TradingView</span>
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1331,6 +1330,11 @@
                 document.getElementById('refreshChart').addEventListener('click', () => {
                     this.reconnect();
                 });
+                
+                // Chart type switcher
+                document.getElementById('chartType').addEventListener('change', (e) => {
+                    this.switchChartType(e.target.value);
+                });
             }
 
             connectWebSocket() {
@@ -1448,6 +1452,108 @@
                 this.chart.options.scales.y.ticks.color = isDark ? '#9ca3af' : '#6b7280';
                 
                 this.chart.update();
+                
+                // Update TradingView widget if active
+                if (this.tradingViewWidget && document.getElementById('chartType').value === 'tradingview') {
+                    this.loadTradingViewWidget();
+                }
+            }
+
+            switchChartType(type) {
+                const customContainer = document.getElementById('customChartContainer');
+                const tradingViewContainer = document.getElementById('tradingViewContainer');
+                
+                if (type === 'tradingview') {
+                    customContainer.style.display = 'none';
+                    tradingViewContainer.style.display = 'block';
+                    this.loadTradingViewWidget();
+                } else {
+                    customContainer.style.display = 'block';
+                    tradingViewContainer.style.display = 'none';
+                    this.reconnect();
+                }
+            }
+
+            loadTradingViewWidget() {
+                const container = document.getElementById('tradingview_widget');
+                const isDark = document.documentElement.classList.contains('dark');
+                
+                // Clear existing widget
+                container.innerHTML = '';
+                
+                // Create TradingView widget script
+                const script = document.createElement('script');
+                script.type = 'text/javascript';
+                script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
+                script.async = true;
+                
+                // Convert symbol format for TradingView
+                const tvSymbol = this.convertSymbolForTradingView(this.currentSymbol);
+                
+                // Widget configuration
+                const config = {
+                    autosize: true,
+                    symbol: tvSymbol,
+                    interval: this.convertIntervalForTradingView(this.currentInterval),
+                    timezone: "Etc/UTC",
+                    theme: isDark ? "dark" : "light",
+                    style: "1",
+                    locale: "en",
+                    backgroundColor: isDark ? "#1f2937" : "#ffffff",
+                    gridColor: isDark ? "rgba(255, 255, 255, 0.06)" : "rgba(46, 46, 46, 0.06)",
+                    allow_symbol_change: true,
+                    calendar: false,
+                    details: false,
+                    hide_side_toolbar: false,
+                    hide_top_toolbar: false,
+                    hide_legend: false,
+                    hide_volume: false,
+                    hotlist: false,
+                    save_image: true,
+                    withdateranges: false,
+                    compareSymbols: [],
+                    studies: [],
+                    watchlist: []
+                };
+                
+                script.innerHTML = JSON.stringify(config);
+                container.appendChild(script);
+            }
+
+            convertSymbolForTradingView(symbol) {
+                // Convert binance symbols to TradingView format
+                const symbolMap = {
+                    'btcusdt': 'BINANCE:BTCUSDT',
+                    'ethusdt': 'BINANCE:ETHUSDT',
+                    'adausdt': 'BINANCE:ADAUSDT',
+                    'bnbusdt': 'BINANCE:BNBUSDT',
+                    'solusdt': 'BINANCE:SOLUSDT',
+                    'dogeusdt': 'BINANCE:DOGEUSDT',
+                    'xrpusdt': 'BINANCE:XRPUSDT',
+                    'avaxusdt': 'BINANCE:AVAXUSDT',
+                    'dotusdt': 'BINANCE:DOTUSDT',
+                    'maticusdt': 'BINANCE:MATICUSDT',
+                    'linkusdt': 'BINANCE:LINKUSDT',
+                    'ltcusdt': 'BINANCE:LTCUSDT'
+                };
+                
+                return symbolMap[symbol.toLowerCase()] || `BINANCE:${symbol.toUpperCase()}`;
+            }
+
+            convertIntervalForTradingView(interval) {
+                // Convert binance intervals to TradingView format
+                const intervalMap = {
+                    '1m': '1',
+                    '3m': '3',
+                    '5m': '5',
+                    '15m': '15',
+                    '30m': '30',
+                    '1h': '60',
+                    '4h': '240',
+                    '1d': 'D'
+                };
+                
+                return intervalMap[interval] || '5';
             }
 
             reconnect() {
