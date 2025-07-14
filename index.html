@@ -3,301 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kripto Trading Analiz - Strategy Back Test</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <title>Binance Sinyal Botu</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
-        
-        * {
-            font-family: 'Roboto', sans-serif;
-        }
-        
-        :root {
-            --primary-color: #5D5CDE;
-            --bg-light: #FFFFFF;
-            --bg-dark: #181818;
-            --text-light: #000000;
-            --text-dark: #FFFFFF;
-            --green: #22C55E;
-            --red: #EF4444;
-            --yellow: #FCD34D;
-        }
-        
-        .dark {
-            --bg-color: var(--bg-dark);
-            --text-color: var(--text-dark);
-        }
-        
-        body {
-            background-color: var(--bg-light);
-            color: var(--text-light);
-            transition: all 0.3s ease;
-        }
-        
-        .dark body {
-            background-color: var(--bg-dark);
-            color: var(--text-dark);
-        }
-        
-        .indicator-card {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 12px;
-            padding: 16px;
-            margin: 8px;
-            transition: transform 0.2s ease;
-        }
-        
-        .indicator-card:hover {
-            transform: translateY(-2px);
-        }
-        
-        .signal-bull {
-            background: linear-gradient(135deg, #22C55E, #16A34A);
-            color: white;
-        }
-        
-        .signal-bear {
-            background: linear-gradient(135deg, #EF4444, #DC2626);
-            color: white;
-        }
-        
-        .signal-neutral {
-            background: linear-gradient(135deg, #6B7280, #4B5563);
-            color: white;
-        }
-        
-        .alarm-active {
-            animation: pulse 1s infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        
-        .chart-container {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 16px;
-            padding: 20px;
-            margin: 16px 0;
-        }
-        
-        .timeframe-btn {
-            padding: 8px 16px;
-            border-radius: 8px;
-            border: 1px solid var(--primary-color);
-            background: transparent;
-            color: var(--primary-color);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin: 4px;
-        }
-        
-        .timeframe-btn.active {
-            background: var(--primary-color);
-            color: white;
-        }
-        
-        .price-display {
-            font-size: 2rem;
-            font-weight: 700;
-            margin: 16px 0;
-        }
-        
-        .price-up { color: var(--green); }
-        .price-down { color: var(--red); }
-        
-        .strategy-panel {
-            background: linear-gradient(135deg, rgba(93, 92, 222, 0.1), rgba(93, 92, 222, 0.05));
-            border-radius: 16px;
-            padding: 20px;
-            margin: 16px 0;
-        }
-    </style>
-</head>
-<body class="min-h-screen">
-    <div class="container mx-auto px-4 py-6">
-        <header class="text-center mb-8">
-            <h1 class="text-4xl font-bold mb-4 bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                Kripto Trading Analiz Sistemi
-            </h1>
-            <p class="text-lg opacity-80">Strategy Back Test - RSI HEAT MAP, Multi Time Frame Analiz</p>
-        </header>
-
-        <!-- Ana Kontrol Paneli -->
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
-            <div class="lg:col-span-3">
-                <div class="flex flex-wrap items-center justify-between mb-4">
-                    <div class="flex flex-wrap">
-                        <select id="symbolSelect" class="bg-gray-800 text-white p-2 rounded-lg mr-4 text-base">
-                            <option value="DRIFTUSDT">DRIFTUSDT</option>
-                            <option value="TRUMPUSDT">TRUMPUSDT</option>
-                            <option value="HYPEUSDT">HYPEUSDT</option>
-                            <option value="BTCUSDT">BTCUSDT</option>
-                            <option value="ETHUSDT">ETHUSDT</option>
-                        </select>
-                        
-                        <div class="flex flex-wrap">
-                            <button class="timeframe-btn active" data-tf="1m">1M</button>
-                            <button class="timeframe-btn" data-tf="3m">3M</button>
-                            <button class="timeframe-btn" data-tf="5m">5M</button>
-                            <button class="timeframe-btn" data-tf="15m">15M</button>
-                            <button class="timeframe-btn" data-tf="1h">1H</button>
-                            <button class="timeframe-btn" data-tf="4h">4H</button>
-                        </div>
-                    </div>
-                    
-                    <div class="flex items-center">
-                        <button id="alarmToggle" class="bg-yellow-500 text-black px-4 py-2 rounded-lg mr-4 font-semibold">
-                            <i class="fas fa-bell mr-2"></i>Alarm: KAPALI
-                        </button>
-                        <div id="connectionStatus" class="text-green-500 font-semibold">
-                            <i class="fas fa-circle mr-2"></i>CANLI
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Fiyat Gösterimi -->
-                <div class="bg-gray-900 rounded-lg p-6 mb-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <div class="text-2xl font-bold" id="currentSymbol">DRIFTUSDT</div>
-                            <div class="price-display" id="currentPrice">$0.0000</div>
-                            <div class="text-sm opacity-75" id="priceChange">24h Değişim: 0.00%</div>
-                        </div>
-                        <div class="text-right">
-                            <div class="text-sm opacity-75">Hacim (24h)</div>
-                            <div class="text-lg font-semibold" id="volume24h">$0</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Ana Grafik -->
-                <div class="chart-container">
-                    <canvas id="mainChart" width="800" height="400"></canvas>
-                </div>
-            </div>
-
-            <!-- Göstergeler Paneli -->
-            <div class="space-y-4">
-                <div class="strategy-panel">
-                    <h3 class="text-lg font-bold mb-4 text-center">BTC Trend Analizi</h3>
-                    <div id="btcAnalysis" class="text-center">
-                        <div class="text-3xl mb-2" id="btcPrice">$0</div>
-                        <div class="text-sm" id="btcTrend">Trend Analiz Ediliyor...</div>
-                    </div>
-                </div>
-
-                <div class="strategy-panel">
-                    <h3 class="text-lg font-bold mb-4">A01 Stratejisi</h3>
-                    <div class="space-y-3">
-                        <div class="indicator-card" id="rsiA01">
-                            <div class="text-sm font-semibold">RSI 21-34 SMA</div>
-                            <div class="text-2xl font-bold">--</div>
-                            <div class="text-xs">5M Timeframe</div>
-                        </div>
-                        <div class="indicator-card" id="emaA01">
-                            <div class="text-sm font-semibold">EMA Cross 5-14</div>
-                            <div class="text-lg font-bold">--</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="strategy-panel">
-                    <h3 class="text-lg font-bold mb-4">A02 Stratejisi</h3>
-                    <div class="space-y-3">
-                        <div class="indicator-card" id="aoIndicator">
-                            <div class="text-sm font-semibold">AO (Awesome)</div>
-                            <div class="text-2xl font-bold">--</div>
-                            <div class="text-xs">Momentum</div>
-                        </div>
-                        <div class="indicator-card" id="eomIndicator">
-                            <div class="text-sm font-semibold">EOM</div>
-                            <div class="text-2xl font-bold">--</div>
-                            <div class="text-xs">15M Kontrol</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="strategy-panel">
-                    <h3 class="text-lg font-bold mb-4">SMI & RSI Heat Map</h3>
-                    <div class="space-y-3">
-                        <div class="indicator-card" id="smiioIndicator">
-                            <div class="text-sm font-semibold">SMI</div>
-                            <div class="text-2xl font-bold">--</div>
-                            <div class="text-xs">3M/5M Sinyal</div>
-                        </div>
-                        <div class="indicator-card" id="rsiHeatMap">
-                            <div class="text-sm font-semibold">RSI Heat Map</div>
-                            <div class="text-lg font-bold">Avarage: --</div>
-                            <div class="text-xs">15M/1H Tarama</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Multi Time Frame Analizi -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-            <div class="strategy-panel">
-                <h3 class="text-lg font-bold mb-4 text-center">HTF Analiz (1H/4H)</h3>
-                <div id="htfAnalysis">
-                    <div class="text-sm mb-2">Arz-Talep Bölgeleri:</div>
-                    <div class="space-y-2" id="supplyDemandZones">
-                        <div class="text-xs bg-red-500 bg-opacity-20 p-2 rounded">Arz: $0.00 - $0.00</div>
-                        <div class="text-xs bg-green-500 bg-opacity-20 p-2 rounded">Talep: $0.00 - $0.00</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="strategy-panel">
-                <h3 class="text-lg font-bold mb-4 text-center">MTF Analiz (15M)</h3>
-                <div id="mtfAnalysis">
-                    <div class="text-sm mb-2">Fibonacci Seviyeleri:</div>
-                    <div class="space-y-1 text-xs" id="fibLevels">
-                        <div>0.618: $0.00</div>
-                        <div>0.705: $0.00</div>
-                        <div>0.786: $0.00</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="strategy-panel">
-                <h3 class="text-lg font-bold mb-4 text-center">LTF Analiz (3M/5M)</h3>
-                <div id="ltfAnalysis">
-                    <div class="text-sm mb-2">Osilatör Sinyalleri:</div>
-                    <div class="space-y-2" id="oscillatorSignals">
-                        <div class="text-xs">Teyit Bekliyor...</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Alarm Sistemi -->
-        <div id="alarmPanel" class="bg-red-900 bg-opacity-50 rounded-lg p-4 mb-6 hidden">
-            <h3 class="text-lg font-bold mb-2 flex items-center">
-                <i class="fas fa-exclamation-triangle mr-2 text-yellow-500"></i>
-                Sinyal Alarmı
-            </h3>
-            <div id="alarmMessage" class="text-sm"></div>
-        </div>
-
-        <!-- İşlem Geçmişi -->
-        <div class="strategy-panel">
-            <h3 class="text-lg font-bold mb-4">Sinyal Geçmişi</h3>
-            <div id="signalHistory" class="space-y-2 max-h-64 overflow-y-auto">
-                <div class="text-sm opacity-75">Sinyal geçmişi burada görünecek...</div>
-            </div>
-        </div>
-    </div>
-
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script>
-        // Dark mode detection
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#F0B90B',
+                        'primary-dark': '#D4AC0D',
+                        'binance-green': '#02C076',
+                        'binance-red': '#F6465D',
+                        'binance-dark': '#1E2329',
+                        'binance-darker': '#0B0E11',
+                        'binance-gray': '#2B3139',
+                        'binance-light-gray': '#474D57'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 dark:bg-binance-darker text-gray-900 dark:text-white transition-colors duration-300">
+    <!-- Dark Mode Setup -->
+    <script>
         if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
             document.documentElement.classList.add('dark');
         }
@@ -308,823 +40,1396 @@
                 document.documentElement.classList.remove('dark');
             }
         });
+    </script>
 
-        // Global variables
-        let currentSymbol = 'DRIFTUSDT';
-        let currentTimeframe = '1m';
-        let alarmEnabled = false;
-        let priceData = [];
-        let mainChart;
-        let wsConnection;
-        let lastSignalTime = 0;
+    <div class="min-h-screen bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-binance-darker dark:to-binance-dark">
+        <!-- Header -->
+        <header class="bg-white dark:bg-binance-dark shadow-lg border-b border-gray-200 dark:border-binance-gray">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                            <i class="fas fa-chart-line text-white text-lg"></i>
+                        </div>
+                        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Binance Sinyal Botu</h1>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <div id="connectionStatus" class="flex items-center space-x-2">
+                            <div class="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                            <span class="text-sm text-gray-600 dark:text-gray-400">Bağlantı Bekleniyor</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
 
-        // Fibonacci calculation functions
-        function calculateFibonacciLevels(high, low, isRetracement = true) {
-            const diff = high - low;
-            const levels = isRetracement ? 
-                [0, 0.236, 0.382, 0.5, 0.618, 0.705, 0.786, 1] :
-                [0, 0.618, 1, 1.618, 2.618, 4.236];
-            
-            return levels.map(level => ({
-                level: level,
-                price: isRetracement ? high - (diff * level) : low + (diff * level),
-                label: `${(level * 100).toFixed(1)}%`
-            }));
-        }
-
-        function findSwingHighLow(highs, lows, period = 20) {
-            if (highs.length < period) return null;
-            
-            const recentHighs = highs.slice(-period);
-            const recentLows = lows.slice(-period);
-            
-            const swingHigh = Math.max(...recentHighs);
-            const swingLow = Math.min(...recentLows);
-            
-            return { high: swingHigh, low: swingLow };
-        }
-
-        function detectSupplyDemandZones(highs, lows, closes, volumes) {
-            const zones = [];
-            const lookback = 20;
-            
-            if (highs.length < lookback) return zones;
-            
-            for (let i = lookback; i < highs.length - 5; i++) {
-                const currentHigh = highs[i];
-                const currentLow = lows[i];
-                const currentVolume = volumes[i];
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Control Panel -->
+            <div class="bg-white dark:bg-binance-dark rounded-xl shadow-lg p-6 mb-8 border border-gray-200 dark:border-binance-gray">
+                <h2 class="text-lg font-semibold mb-4 flex items-center">
+                    <i class="fas fa-cog mr-2 text-primary"></i>
+                    Kontrol Paneli
+                </h2>
                 
-                // Supply zone detection (yüksek hacimli tepeler)
-                const isLocalHigh = highs.slice(i-5, i+5).every(h => h <= currentHigh);
-                const highVolume = currentVolume > volumes.slice(i-10, i+10).reduce((a,b) => a+b) / 20 * 1.5;
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Finansal Varlık</label>
+                        <div class="relative">
+                            <input 
+                                type="text" 
+                                id="symbolInput" 
+                                placeholder="Örnek: BTCUSDT" 
+                                class="w-full px-4 py-3 text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                                value="BTCUSDT"
+                            >
+                            <i class="fas fa-coins absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Tarama Aralığı</label>
+                        <select id="intervalSelect" class="w-full px-4 py-3 text-base border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                            <option value="30">30 Saniye</option>
+                            <option value="60" selected>1 Dakika</option>
+                            <option value="120">2 Dakika</option>
+                            <option value="300">5 Dakika</option>
+                        </select>
+                    </div>
+                    
+                    <div class="flex items-end">
+                        <button 
+                            id="toggleBot" 
+                            class="w-full px-6 py-3 bg-primary text-white rounded-lg hover:bg-opacity-90 transition-all duration-200 font-medium flex items-center justify-center space-x-2"
+                        >
+                            <i id="botIcon" class="fas fa-play"></i>
+                            <span id="botText">Botu Başlat</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Settings Row -->
+                <div class="flex flex-wrap items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-600">
+                    <div class="flex items-center space-x-4">
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" id="soundEnabled" checked class="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary dark:focus:ring-primary dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                            <span class="text-sm">Ses Uyarısı</span>
+                        </label>
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" id="pushEnabled" checked class="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary dark:focus:ring-primary dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                            <span class="text-sm">Push Bildirim</span>
+                        </label>
+                    </div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400">
+                        Son Güncelleme: <span id="lastUpdate">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Market Data -->
+                <div class="lg:col-span-2">
+                    <!-- Current Price Card -->
+                    <div class="bg-white dark:bg-binance-dark rounded-xl shadow-lg p-6 mb-6 border border-gray-200 dark:border-binance-gray">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold flex items-center">
+                                <i class="fas fa-chart-area mr-2 text-primary"></i>
+                                Güncel Piyasa Verileri
+                            </h3>
+                            <div id="priceChangeIndicator" class="flex items-center space-x-2">
+                                <span id="priceChange" class="text-sm font-medium">-</span>
+                                <i id="priceArrow" class="fas fa-minus text-gray-400"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-primary" id="currentPrice">-</div>
+                                <div class="text-xs text-gray-600 dark:text-gray-400">Güncel Fiyat</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-lg font-semibold" id="volume24h">-</div>
+                                <div class="text-xs text-gray-600 dark:text-gray-400">24s Hacim</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-lg font-semibold" id="high24h">-</div>
+                                <div class="text-xs text-gray-600 dark:text-gray-400">24s Yüksek</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-lg font-semibold" id="low24h">-</div>
+                                <div class="text-xs text-gray-600 dark:text-gray-400">24s Düşük</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Technical Indicators -->
+                    <div class="bg-white dark:bg-binance-dark rounded-xl shadow-lg p-6 mb-6 border border-gray-200 dark:border-binance-gray">
+                        <h3 class="text-lg font-semibold mb-4 flex items-center">
+                            <i class="fas fa-chart-line mr-2 text-primary"></i>
+                            Teknik Göstergeler
+                        </h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-gray-600 dark:text-gray-400">RSI (21)</span>
+                                    <span id="rsi21" class="font-medium">-</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-gray-600 dark:text-gray-400">RSI (34)</span>
+                                    <span id="rsi34" class="font-medium">-</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-gray-600 dark:text-gray-400">EMA (8)</span>
+                                    <span id="ema8" class="font-medium">-</span>
+                                </div>
+                            </div>
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-gray-600 dark:text-gray-400">WMA (34)</span>
+                                    <span id="wma34" class="font-medium">-</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-gray-600 dark:text-gray-400">VWMA (21)</span>
+                                    <span id="vwma21" class="font-medium">-</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-gray-600 dark:text-gray-400">Pivot</span>
+                                    <span id="pivot" class="font-medium">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pivot Levels -->
+                    <div class="bg-white dark:bg-binance-dark rounded-xl shadow-lg p-6 mb-6 border border-gray-200 dark:border-binance-gray">
+                        <h3 class="text-lg font-semibold mb-4 flex items-center">
+                            <i class="fas fa-layer-group mr-2 text-primary"></i>
+                            Camarilla Pivot Seviyeleri
+                        </h3>
+                        
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-center py-2 px-3 bg-red-50 dark:bg-binance-red/10 rounded-lg border dark:border-binance-red/30">
+                                <span class="text-sm font-medium text-binance-red">R4 (Arz)</span>
+                                <span id="r4Level" class="font-medium">-</span>
+                            </div>
+                            <div class="flex justify-between items-center py-2 px-3 bg-red-50 dark:bg-binance-red/10 rounded-lg border dark:border-binance-red/30">
+                                <span class="text-sm font-medium text-binance-red">R3 (Arz)</span>
+                                <span id="r3Level" class="font-medium">-</span>
+                            </div>
+                            <div class="flex justify-between items-center py-2 px-3 bg-yellow-50 dark:bg-primary/10 rounded-lg border dark:border-primary/30">
+                                <span class="text-sm font-medium text-primary">Pivot</span>
+                                <span id="pivotLevel" class="font-medium">-</span>
+                            </div>
+                            <div class="flex justify-between items-center py-2 px-3 bg-green-50 dark:bg-binance-green/10 rounded-lg border dark:border-binance-green/30">
+                                <span class="text-sm font-medium text-binance-green">S3 (Talep)</span>
+                                <span id="s3Level" class="font-medium">-</span>
+                            </div>
+                            <div class="flex justify-between items-center py-2 px-3 bg-green-50 dark:bg-binance-green/10 rounded-lg border dark:border-binance-green/30">
+                                <span class="text-sm font-medium text-binance-green">S4 (Talep)</span>
+                                <span id="s4Level" class="font-medium">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TradingView Chart -->
+                    <div class="bg-white dark:bg-binance-dark rounded-xl shadow-lg p-6 border border-gray-200 dark:border-binance-gray">
+                        <h3 class="text-lg font-semibold mb-4 flex items-center justify-between">
+                            <span class="flex items-center">
+                                <i class="fas fa-chart-candlestick mr-2 text-primary"></i>
+                                Canlı Grafik
+                            </span>
+                            <div class="flex items-center space-x-2">
+                                <select id="chartTimeframe" class="text-xs border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                                    <option value="5">5m</option>
+                                    <option value="15" selected>15m</option>
+                                    <option value="60">1h</option>
+                                    <option value="240">4h</option>
+                                    <option value="D">1D</option>
+                                </select>
+                                <button id="refreshChart" class="text-xs px-2 py-1 bg-primary text-white rounded hover:bg-opacity-90">
+                                    <i class="fas fa-sync-alt"></i>
+                                </button>
+                            </div>
+                        </h3>
+                        
+                        <div class="rounded-lg overflow-hidden" style="height: 500px;">
+                            <!-- TradingView Widget BEGIN -->
+                            <div id="tradingview_chart" class="tradingview-widget-container" style="height:100%;width:100%">
+                                <div class="tradingview-widget-container__widget" style="height:calc(100% - 32px);width:100%"></div>
+                                <div class="tradingview-widget-copyright">
+                                    <a href="https://www.tradingview.com/" rel="noopener nofollow" target="_blank">
+                                        <span class="text-xs text-gray-500">Powered by TradingView</span>
+                                    </a>
+                                </div>
+                            </div>
+                            <!-- TradingView Widget END -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Signals Panel -->
+                <div class="space-y-6">
+                    <!-- Active Signals -->
+                    <div class="bg-white dark:bg-binance-dark rounded-xl shadow-lg p-6 border border-gray-200 dark:border-binance-gray">
+                        <h3 class="text-lg font-semibold mb-4 flex items-center">
+                            <i class="fas fa-bell mr-2 text-primary"></i>
+                            Aktif Sinyaller
+                        </h3>
+                        
+                        <div id="activeSignals" class="space-y-3">
+                            <div class="text-center text-gray-500 dark:text-gray-400 py-8">
+                                <i class="fas fa-search text-2xl mb-2 text-primary"></i>
+                                <p>Sinyal bekleniyor...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Signal History -->
+                    <div class="bg-white dark:bg-binance-dark rounded-xl shadow-lg p-6 border border-gray-200 dark:border-binance-gray">
+                        <h3 class="text-lg font-semibold mb-4 flex items-center justify-between">
+                            <span class="flex items-center">
+                                <i class="fas fa-history mr-2 text-primary"></i>
+                                Sinyal Geçmişi
+                            </span>
+                            <button id="clearHistory" class="text-xs text-gray-500 hover:text-binance-red transition-colors">
+                                <i class="fas fa-trash mr-1"></i>Temizle
+                            </button>
+                        </h3>
+                        
+                        <div id="signalHistory" class="space-y-2 max-h-96 overflow-y-auto">
+                            <div class="text-center text-gray-500 dark:text-gray-400 py-4">
+                                <p class="text-sm">Henüz sinyal geçmişi yok</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Confluence Analysis -->
+                    <div class="bg-white dark:bg-binance-dark rounded-xl shadow-lg p-6 mb-6 border border-gray-200 dark:border-binance-gray">
+                        <h3 class="text-lg font-semibold mb-4 flex items-center">
+                            <i class="fas fa-crosshairs mr-2 text-primary"></i>
+                            Confluence Analizi
+                        </h3>
+                        
+                        <div class="space-y-4">
+                            <!-- Signal Strength -->
+                            <div class="text-center">
+                                <div class="mb-2">
+                                    <span class="text-2xl font-bold" id="signalStrengthScore">0</span>
+                                    <span class="text-sm text-gray-500">/5</span>
+                                </div>
+                                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 mb-2">
+                                    <div id="signalStrengthBar" class="h-3 rounded-full transition-all duration-500" style="width: 0%"></div>
+                                </div>
+                                <div id="signalQuality" class="text-sm font-medium">Sinyal Yok</div>
+                            </div>
+                            
+                            <!-- Zone Analysis -->
+                            <div class="grid grid-cols-2 gap-3">
+                                <div id="supplyZoneCard" class="p-3 rounded-lg border text-center opacity-50">
+                                    <div class="text-binance-red mb-1">
+                                        <i class="fas fa-arrow-down"></i>
+                                    </div>
+                                    <div class="text-xs font-medium">Arz Bölgesi</div>
+                                    <div class="text-xs text-gray-500">Satım Sinyali</div>
+                                </div>
+                                <div id="demandZoneCard" class="p-3 rounded-lg border text-center opacity-50">
+                                    <div class="text-binance-green mb-1">
+                                        <i class="fas fa-arrow-up"></i>
+                                    </div>
+                                    <div class="text-xs font-medium">Talep Bölgesi</div>
+                                    <div class="text-xs text-gray-500">Alım Sinyali</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Performance Panel -->
+                    <div class="bg-white dark:bg-binance-dark rounded-xl shadow-lg p-6 mb-6 border border-gray-200 dark:border-binance-gray">
+                        <h3 class="text-lg font-semibold mb-4 flex items-center">
+                            <i class="fas fa-trophy mr-2 text-primary"></i>
+                            Performans
+                        </h3>
+                        
+                        <div class="space-y-4">
+                            <!-- Win Rate Circle -->
+                            <div class="text-center">
+                                <div class="relative inline-flex items-center justify-center w-20 h-20">
+                                    <svg class="w-20 h-20 transform -rotate-90">
+                                        <circle cx="40" cy="40" r="30" stroke="currentColor" stroke-width="6" fill="transparent" class="text-gray-200 dark:text-gray-700"/>
+                                        <circle id="winRateCircle" cx="40" cy="40" r="30" stroke="currentColor" stroke-width="6" fill="transparent" stroke-linecap="round" class="text-binance-green transition-all duration-500" stroke-dasharray="188.4" stroke-dashoffset="188.4"/>
+                                    </svg>
+                                    <div class="absolute inset-0 flex items-center justify-center">
+                                        <span id="winRatePercentage" class="text-lg font-bold">0%</span>
+                                    </div>
+                                </div>
+                                <div class="text-xs text-gray-600 dark:text-gray-400 mt-1">Başarı Oranı</div>
+                            </div>
+                            
+                            <!-- Performance Stats -->
+                            <div class="space-y-2">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-xs text-gray-600 dark:text-gray-400">Toplam P&L</span>
+                                    <span id="totalPL" class="font-medium text-gray-500">0.00%</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-xs text-gray-600 dark:text-gray-400">Başarılı</span>
+                                    <span id="successfulSignals" class="font-medium text-binance-green">0</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-xs text-gray-600 dark:text-gray-400">Başarısız</span>
+                                    <span id="failedSignals" class="font-medium text-binance-red">0</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-xs text-gray-600 dark:text-gray-400">Beklemede</span>
+                                    <span id="pendingSignals" class="font-medium text-primary">0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Statistics -->
+                    <div class="bg-white dark:bg-binance-dark rounded-xl shadow-lg p-6 border border-gray-200 dark:border-binance-gray">
+                        <h3 class="text-lg font-semibold mb-4 flex items-center">
+                            <i class="fas fa-chart-pie mr-2 text-primary"></i>
+                            İstatistikler
+                        </h3>
+                        
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600 dark:text-gray-400">Toplam Sinyal</span>
+                                <span id="totalSignals" class="font-medium text-primary">0</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600 dark:text-gray-400">Alım Sinyali</span>
+                                <span id="buySignals" class="font-medium text-binance-green">0</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600 dark:text-gray-400">Satım Sinyali</span>
+                                <span id="sellSignals" class="font-medium text-binance-red">0</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600 dark:text-gray-400">Çalışma Süresi</span>
+                                <span id="uptime" class="font-medium">00:00:00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Signal Modal -->
+    <div id="signalModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full p-6 transform transition-all">
+            <div class="text-center mb-6">
+                <div id="signalIcon" class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center">
+                    <i class="fas fa-exclamation-triangle text-2xl text-white"></i>
+                </div>
+                <h3 id="signalTitle" class="text-xl font-bold mb-2">Yeni Sinyal!</h3>
+                <p id="signalMessage" class="text-gray-600 dark:text-gray-400"></p>
+            </div>
+            
+            <div id="signalDetails" class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-4 space-y-2">
+                <!-- Signal details will be inserted here -->
+            </div>
+            
+            <div class="flex space-x-3">
+                <button id="closeSignalModal" class="flex-1 px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors">
+                    Kapat
+                </button>
+                <button id="ackSignalModal" class="flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90 transition-colors">
+                    Tamam
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class BinanceSignalBot {
+            constructor() {
+                this.isRunning = false;
+                this.symbol = 'BTCUSDT';
+                this.interval = 60000; // 1 minute
+                this.htfInterval = '4h';
+                this.ltfInterval = '15m';
+                this.candleLimit = 100;
+                this.apiBase = 'https://api.binance.com/api/v3';
+                this.intervalId = null;
+                this.startTime = null;
+                this.uptimeInterval = null;
                 
-                if (isLocalHigh && highVolume) {
-                    zones.push({
-                        type: 'supply',
-                        top: currentHigh * 1.002,
-                        bottom: currentHigh * 0.998,
-                        strength: currentVolume,
-                        index: i
-                    });
+                // Statistics
+                this.stats = {
+                    total: 0,
+                    buy: 0,
+                    sell: 0,
+                    successful: 0,
+                    failed: 0,
+                    pending: 0,
+                    totalProfitLoss: 0,
+                    winRate: 0
+                };
+                
+                // Active signals tracking
+                this.activeSignalsTracking = new Map();
+                
+                this.initializeEventListeners();
+                this.requestNotificationPermission();
+            }
+
+            // Technical Indicator Calculations
+            calculateEMA(prices, period) {
+                const ema = [];
+                let multiplier = 2 / (period + 1);
+                ema[0] = prices[0];
+                for (let i = 1; i < prices.length; i++) {
+                    ema[i] = (prices[i] * multiplier) + (ema[i - 1] * (1 - multiplier));
                 }
-                
-                // Demand zone detection (yüksek hacimli dipler)
-                const isLocalLow = lows.slice(i-5, i+5).every(l => l >= currentLow);
-                
-                if (isLocalLow && highVolume) {
-                    zones.push({
-                        type: 'demand',
-                        top: currentLow * 1.002,
-                        bottom: currentLow * 0.998,
-                        strength: currentVolume,
-                        index: i
-                    });
-                }
+                return ema;
             }
-            
-            return zones.slice(-10); // Son 10 bölgeyi tut
-        }
 
-        function calculatePivotLevels(high, low, close) {
-            const pivot = (high + low + close) / 3;
-            
-            return {
-                PP: pivot,
-                R1: (2 * pivot) - low,
-                R2: pivot + (high - low),
-                R3: high + 2 * (pivot - low),
-                S1: (2 * pivot) - high,
-                S2: pivot - (high - low),
-                S3: low - 2 * (high - pivot)
-            };
-        }
-
-        function detectCandlestickPatterns(opens, highs, lows, closes) {
-            if (closes.length < 3) return [];
-            
-            const patterns = [];
-            const lastIndex = closes.length - 1;
-            
-            // Pinbar detection
-            const bodySize = Math.abs(closes[lastIndex] - opens[lastIndex]);
-            const upperWick = highs[lastIndex] - Math.max(opens[lastIndex], closes[lastIndex]);
-            const lowerWick = Math.min(opens[lastIndex], closes[lastIndex]) - lows[lastIndex];
-            const totalRange = highs[lastIndex] - lows[lastIndex];
-            
-            if (upperWick > bodySize * 2 && upperWick > totalRange * 0.6) {
-                patterns.push({ type: 'bearish_pinbar', strength: upperWick / bodySize });
-            }
-            
-            if (lowerWick > bodySize * 2 && lowerWick > totalRange * 0.6) {
-                patterns.push({ type: 'bullish_pinbar', strength: lowerWick / bodySize });
-            }
-            
-            // Doji detection
-            if (bodySize < totalRange * 0.1) {
-                patterns.push({ type: 'doji', strength: totalRange / bodySize });
-            }
-            
-            // Engulfing pattern
-            if (lastIndex > 0) {
-                const prevBodySize = Math.abs(closes[lastIndex-1] - opens[lastIndex-1]);
-                const currentIsBullish = closes[lastIndex] > opens[lastIndex];
-                const prevIsBearish = closes[lastIndex-1] < opens[lastIndex-1];
-                
-                if (currentIsBullish && prevIsBearish && 
-                    closes[lastIndex] > opens[lastIndex-1] && 
-                    opens[lastIndex] < closes[lastIndex-1]) {
-                    patterns.push({ type: 'bullish_engulfing', strength: bodySize / prevBodySize });
-                }
-            }
-            
-            return patterns;
-        }
-
-        function detectImbalances(highs, lows, threshold = 0.002) {
-            const imbalances = [];
-            
-            for (let i = 1; i < highs.length - 1; i++) {
-                const gap = lows[i+1] - highs[i-1];
-                const avgPrice = (highs[i] + lows[i]) / 2;
-                
-                if (Math.abs(gap) / avgPrice > threshold) {
-                    imbalances.push({
-                        start: highs[i-1],
-                        end: lows[i+1],
-                        size: Math.abs(gap),
-                        index: i,
-                        filled: false
-                    });
-                }
-            }
-            
-            return imbalances.slice(-5); // Son 5 imbalance
-        }
-
-        // Technical indicators calculation functions
-        function calculateRSI(prices, period = 14) {
-            if (prices.length < period + 1) return null;
-            
-            let gains = 0;
-            let losses = 0;
-            
-            for (let i = 1; i <= period; i++) {
-                const change = prices[i] - prices[i - 1];
-                if (change > 0) gains += change;
-                else losses -= change;
-            }
-            
-            const avgGain = gains / period;
-            const avgLoss = losses / period;
-            
-            if (avgLoss === 0) return 100;
-            
-            const rs = avgGain / avgLoss;
-            return 100 - (100 / (1 + rs));
-        }
-
-        function calculateSMA(prices, period) {
-            if (prices.length < period) return null;
-            const sum = prices.slice(-period).reduce((a, b) => a + b, 0);
-            return sum / period;
-        }
-
-        function calculateEMA(prices, period) {
-            if (prices.length < period) return null;
-            
-            const multiplier = 2 / (period + 1);
-            let ema = prices.slice(0, period).reduce((a, b) => a + b, 0) / period;
-            
-            for (let i = period; i < prices.length; i++) {
-                ema = (prices[i] * multiplier) + (ema * (1 - multiplier));
-            }
-            
-            return ema;
-        }
-
-        function calculateAO(highs, lows, fastPeriod = 5, slowPeriod = 34) {
-            if (highs.length < slowPeriod || lows.length < slowPeriod) return null;
-            
-            const medianPrices = highs.map((high, i) => (high + lows[i]) / 2);
-            const fastSMA = calculateSMA(medianPrices, fastPeriod);
-            const slowSMA = calculateSMA(medianPrices, slowPeriod);
-            
-            return fastSMA - slowSMA;
-        }
-
-        function calculateEOM(highs, lows, closes, volumes, period = 14) {
-            if (highs.length < 2) return null;
-            
-            const distance = (highs[highs.length - 1] + lows[lows.length - 1]) / 2 - 
-                           (highs[highs.length - 2] + lows[lows.length - 2]) / 2;
-            
-            const boxHeight = (volumes[volumes.length - 1] / 1000000) / 
-                            (highs[highs.length - 1] - lows[lows.length - 1]);
-            
-            const emv = distance / boxHeight;
-            return emv;
-        }
-
-        function calculateSMI(highs, lows, closes, kPeriod = 13, dPeriod = 25, smoothing = 2) {
-            // SMI (Stochastic Momentum Index) calculation
-            if (closes.length < Math.max(kPeriod, dPeriod)) return null;
-            
-            const smiValues = [];
-            
-            for (let i = kPeriod - 1; i < closes.length; i++) {
-                const periodHighs = highs.slice(i - kPeriod + 1, i + 1);
-                const periodLows = lows.slice(i - kPeriod + 1, i + 1);
-                const periodCloses = closes.slice(i - kPeriod + 1, i + 1);
-                
-                const highestHigh = Math.max(...periodHighs);
-                const lowestLow = Math.min(...periodLows);
-                const currentClose = periodCloses[periodCloses.length - 1];
-                const midpoint = (highestHigh + lowestLow) / 2;
-                
-                const smi = ((currentClose - midpoint) / ((highestHigh - lowestLow) / 2)) * 100;
-                smiValues.push(smi);
-            }
-            
-            // Apply EMA smoothing
-            if (smiValues.length === 0) return null;
-            
-            let smoothedSMI = smiValues[0];
-            const multiplier = 2 / (smoothing + 1);
-            
-            for (let i = 1; i < smiValues.length; i++) {
-                smoothedSMI = (smiValues[i] * multiplier) + (smoothedSMI * (1 - multiplier));
-            }
-            
-            return smoothedSMI;
-        }
-
-        // Chart initialization
-        function initializeChart() {
-            const ctx = document.getElementById('mainChart').getContext('2d');
-            
-            mainChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        label: 'Fiyat',
-                        data: [],
-                        borderColor: '#5D5CDE',
-                        backgroundColor: 'rgba(93, 92, 222, 0.1)',
-                        borderWidth: 2,
-                        fill: false,
-                        tension: 0.1
-                    }, {
-                        label: 'RSI',
-                        data: [],
-                        borderColor: '#22C55E',
-                        backgroundColor: 'rgba(34, 197, 94, 0.1)',
-                        borderWidth: 1,
-                        yAxisID: 'y1',
-                        hidden: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            labels: {
-                                color: 'white'
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            ticks: { color: 'white' },
-                            grid: { color: 'rgba(255,255,255,0.1)' }
-                        },
-                        y: {
-                            ticks: { color: 'white' },
-                            grid: { color: 'rgba(255,255,255,0.1)' }
-                        },
-                        y1: {
-                            type: 'linear',
-                            display: false,
-                            position: 'right',
-                            min: 0,
-                            max: 100,
-                            ticks: { color: 'white' },
-                            grid: { drawOnChartArea: false }
-                        }
+            calculateWMA(prices, period) {
+                const wma = [];
+                for (let i = period - 1; i < prices.length; i++) {
+                    let sum = 0, weightSum = 0;
+                    for (let j = 0; j < period; j++) {
+                        const weight = period - j;
+                        sum += prices[i - j] * weight;
+                        weightSum += weight;
                     }
+                    wma.push(sum / weightSum);
                 }
-            });
-        }
-
-        // Binance API functions
-        async function fetchKlineData(symbol, interval, limit = 100) {
-            try {
-                const response = await fetch(
-                    `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`
-                );
-                const data = await response.json();
-                
-                return data.map(kline => ({
-                    time: new Date(kline[0]),
-                    open: parseFloat(kline[1]),
-                    high: parseFloat(kline[2]),
-                    low: parseFloat(kline[3]),
-                    close: parseFloat(kline[4]),
-                    volume: parseFloat(kline[5])
-                }));
-            } catch (error) {
-                console.error('Kline data fetch error:', error);
-                return [];
+                return wma;
             }
-        }
 
-        async function fetch24hrTicker(symbol) {
-            try {
-                const response = await fetch(
-                    `https://api.binance.com/api/v3/ticker/24hr?symbol=${symbol}`
-                );
-                return await response.json();
-            } catch (error) {
-                console.error('24hr ticker fetch error:', error);
+            calculateVWMA(prices, volumes, period) {
+                const vwma = [];
+                for (let i = period - 1; i < prices.length; i++) {
+                    let pvSum = 0, vSum = 0;
+                    for (let j = 0; j < period; j++) {
+                        pvSum += prices[i - j] * volumes[i - j];
+                        vSum += volumes[i - j];
+                    }
+                    vwma.push(pvSum / vSum);
+                }
+                return vwma;
+            }
+
+            calculateRSI(prices, period) {
+                const rsi = [];
+                let gains = 0, losses = 0;
+                
+                for (let i = 1; i < period; i++) {
+                    const diff = prices[i] - prices[i - 1];
+                    if (diff > 0) gains += diff;
+                    else losses -= diff;
+                }
+                
+                let avgGain = gains / period;
+                let avgLoss = losses / period;
+                rsi.push(100 - (100 / (1 + (avgGain / avgLoss))));
+
+                for (let i = period; i < prices.length; i++) {
+                    const diff = prices[i] - prices[i - 1];
+                    const currentGain = diff > 0 ? diff : 0;
+                    const currentLoss = diff < 0 ? -diff : 0;
+                    avgGain = (avgGain * (period - 1) + currentGain) / period;
+                    avgLoss = (avgLoss * (period - 1) + currentLoss) / period;
+                    rsi.push(100 - (100 / (1 + (avgGain / avgLoss))));
+                }
+                return rsi;
+            }
+
+            checkRSIDivergence(rsiValues, prices) {
+                const lastRsi = rsiValues[rsiValues.length - 1];
+                const prevRsi = rsiValues[rsiValues.length - 2];
+                const lastPrice = prices[prices.length - 1];
+                const prevPrice = prices[prices.length - 2];
+                
+                if (lastPrice > prevPrice && lastRsi < prevRsi) return 'Bearish Divergence (Satım Sinyali)';
+                if (lastPrice < prevPrice && lastRsi > prevRsi) return 'Bullish Divergence (Alım Sinyali)';
                 return null;
             }
-        }
 
-        // WebSocket connection for real-time data
-        function connectWebSocket() {
-            if (wsConnection) {
-                wsConnection.close();
+            calculateCamarillaPivots(high, low, close) {
+                const range = high - low;
+                const pivot = (high + low + close) / 3;
+                const r4 = close + range * 1.1 / 2;
+                const r3 = close + range * 1.1 / 4;
+                const s3 = close - range * 1.1 / 4;
+                const s4 = close - range * 1.1 / 2;
+                return { pivot, r3, r4, s3, s4 };
             }
 
-            const wsUrl = `wss://stream.binance.com:9443/ws/${currentSymbol.toLowerCase()}@ticker`;
-            wsConnection = new WebSocket(wsUrl);
-
-            wsConnection.onopen = () => {
-                console.log('WebSocket connected');
-                document.getElementById('connectionStatus').innerHTML = 
-                    '<i class="fas fa-circle mr-2 text-green-500"></i>CANLI';
-            };
-
-            wsConnection.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                updatePriceDisplay(data);
-            };
-
-            wsConnection.onclose = () => {
-                console.log('WebSocket disconnected');
-                document.getElementById('connectionStatus').innerHTML = 
-                    '<i class="fas fa-circle mr-2 text-red-500"></i>BAĞLANTI KESİK';
-                
-                // Reconnect after 3 seconds
-                setTimeout(connectWebSocket, 3000);
-            };
-
-            wsConnection.onerror = (error) => {
-                console.error('WebSocket error:', error);
-            };
-        }
-
-        // Update price display
-        function updatePriceDisplay(tickerData) {
-            const price = parseFloat(tickerData.c);
-            const change = parseFloat(tickerData.P);
-            
-            document.getElementById('currentPrice').textContent = `$${price.toFixed(6)}`;
-            document.getElementById('priceChange').textContent = `24h Değişim: ${change.toFixed(2)}%`;
-            
-            const priceElement = document.getElementById('currentPrice');
-            priceElement.className = change >= 0 ? 'price-display price-up' : 'price-display price-down';
-            
-            document.getElementById('volume24h').textContent = 
-                `$${parseFloat(tickerData.v).toLocaleString()}`;
-        }
-
-        // Calculate and update indicators
-        async function updateIndicators() {
-            const klineData = await fetchKlineData(currentSymbol, currentTimeframe, 200);
-            if (klineData.length === 0) return;
-
-            const closes = klineData.map(k => k.close);
-            const highs = klineData.map(k => k.high);
-            const lows = klineData.map(k => k.low);
-            const volumes = klineData.map(k => k.volume);
-
-            // Update chart
-            updateChart(klineData);
-
-            // Calculate indicators
-            const rsi14 = calculateRSI(closes, 14);
-            const rsi21 = calculateRSI(closes, 21);
-            const rsi34 = calculateRSI(closes, 34);
-            const ema5 = calculateEMA(closes, 5);
-            const ema14 = calculateEMA(closes, 14);
-            const ao = calculateAO(highs, lows);
-            const eom = calculateEOM(highs, lows, closes, volumes);
-            const smi = calculateSMI(highs, lows, closes);
-
-            // Update A01 Strategy (RSI 21-34 SMA)
-            updateA01Strategy(rsi21, rsi34, ema5, ema14);
-            
-            // Update A02 Strategy (AO, EOM)
-            updateA02Strategy(ao, eom);
-            
-            // Update SMI
-            updateSMI(smi);
-            
-            // Update RSI Heat Map
-            updateRSIHeatMap(rsi14, rsi21, rsi34);
-
-            // Calculate advanced analysis
-            const swingLevels = findSwingHighLow(highs, lows);
-            const supplyDemandZones = detectSupplyDemandZones(highs, lows, closes, volumes);
-            const candlestickPatterns = detectCandlestickPatterns(klineData.map(k => k.open), highs, lows, closes);
-            const imbalances = detectImbalances(highs, lows);
-            
-            // Update HTF-MTF-LTF Analysis
-            await updateHTFMTFLTFAnalysis(swingLevels, supplyDemandZones, candlestickPatterns, imbalances);
-
-            // Check for signals
-            checkSignals(rsi21, rsi34, ao, eom, smi, ema5, ema14, candlestickPatterns, supplyDemandZones);
-        }
-
-        function updateChart(klineData) {
-            const labels = klineData.map(k => k.time.toLocaleTimeString());
-            const prices = klineData.map(k => k.close);
-            const rsiData = klineData.map(k => calculateRSI(klineData.slice(0, klineData.indexOf(k) + 1).map(x => x.close), 14));
-
-            mainChart.data.labels = labels;
-            mainChart.data.datasets[0].data = prices;
-            mainChart.data.datasets[1].data = rsiData;
-            mainChart.update('none');
-        }
-
-        function updateA01Strategy(rsi21, rsi34, ema5, ema14) {
-            const rsiElement = document.getElementById('rsiA01');
-            const emaElement = document.getElementById('emaA01');
-
-            if (rsi21 && rsi34) {
-                const rsiSignal = (rsi21 < 34 && rsi34 < 34) ? 'AŞIRI SATIŞ' : 
-                                 (rsi21 > 66 && rsi34 > 66) ? 'AŞIRI ALIŞ' : 'NÖTR';
-                
-                rsiElement.innerHTML = `
-                    <div class="text-sm font-semibold">RSI 21-34 SMA</div>
-                    <div class="text-2xl font-bold">${rsi21.toFixed(1)}</div>
-                    <div class="text-xs">${rsiSignal}</div>
-                `;
-                
-                rsiElement.className = `indicator-card ${
-                    rsiSignal === 'AŞIRI SATIŞ' ? 'signal-bull' :
-                    rsiSignal === 'AŞIRI ALIŞ' ? 'signal-bear' : 'signal-neutral'
-                }`;
+            // API Functions
+            async fetchCandles(interval) {
+                try {
+                    const response = await fetch(`${this.apiBase}/klines?symbol=${this.symbol}&interval=${interval}&limit=${this.candleLimit}`);
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    const data = await response.json();
+                    return data.map(c => ({
+                        open: parseFloat(c[1]),
+                        high: parseFloat(c[2]),
+                        low: parseFloat(c[3]),
+                        close: parseFloat(c[4]),
+                        volume: parseFloat(c[5])
+                    }));
+                } catch (error) {
+                    console.error('Error fetching candles:', error);
+                    this.updateConnectionStatus(false);
+                    throw error;
+                }
             }
 
-            if (ema5 && ema14) {
-                const emaCross = ema5 > ema14 ? 'YUKARI KESIŞ' : 'AŞAĞI KESIŞ';
-                
-                emaElement.innerHTML = `
-                    <div class="text-sm font-semibold">EMA Cross 5-14</div>
-                    <div class="text-lg font-bold">${emaCross}</div>
-                `;
-                
-                emaElement.className = `indicator-card ${
-                    emaCross === 'YUKARI KESIŞ' ? 'signal-bull' : 'signal-bear'
-                }`;
-            }
-        }
-
-        function updateA02Strategy(ao, eom) {
-            const aoElement = document.getElementById('aoIndicator');
-            const eomElement = document.getElementById('eomIndicator');
-
-            if (ao !== null) {
-                const aoSignal = ao > 0 ? 'POZİTİF' : 'NEGATİF';
-                
-                aoElement.innerHTML = `
-                    <div class="text-sm font-semibold">AO (Awesome)</div>
-                    <div class="text-2xl font-bold">${ao.toFixed(4)}</div>
-                    <div class="text-xs">${aoSignal}</div>
-                `;
-                
-                aoElement.className = `indicator-card ${
-                    ao > 0 ? 'signal-bull' : 'signal-bear'
-                }`;
+            async fetch24hrStats() {
+                try {
+                    const response = await fetch(`${this.apiBase}/ticker/24hr?symbol=${this.symbol}`);
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return await response.json();
+                } catch (error) {
+                    console.error('Error fetching 24hr stats:', error);
+                    throw error;
+                }
             }
 
-            if (eom !== null) {
-                const eomSignal = eom > 0 ? 'POZİTİF' : 'NEGATİF';
-                
-                eomElement.innerHTML = `
-                    <div class="text-sm font-semibold">EOM</div>
-                    <div class="text-2xl font-bold">${eom.toFixed(4)}</div>
-                    <div class="text-xs">${eomSignal}</div>
-                `;
-                
-                eomElement.className = `indicator-card ${
-                    eom > 0 ? 'signal-bull' : 'signal-bear'
-                }`;
-            }
-        }
+            // HTF Signal Analysis - Arz/Talep Bölgesi Belirleme
+            async checkHTFSignals() {
+                const candles = await this.fetchCandles(this.htfInterval);
+                const closes = candles.map(c => c.close);
+                const highs = candles.map(c => c.high);
+                const lows = candles.map(c => c.low);
+                const volumes = candles.map(c => c.volume);
+                const currentPrice = closes[closes.length - 1];
 
-        function updateSMI(smi) {
-            const smiElement = document.getElementById('smiioIndicator');
+                let signals = [];
+                let signalStrength = 0;
+                let supplyZone = false;
+                let demandZone = false;
 
-            if (smi !== null) {
-                const smiSignal = smi < -40 ? 'AŞIRI SATIŞ' :
-                                 smi > 40 ? 'AŞIRI ALIŞ' : 'NÖTR';
-                
-                smiElement.innerHTML = `
-                    <div class="text-sm font-semibold">SMI</div>
-                    <div class="text-2xl font-bold">${smi.toFixed(1)}</div>
-                    <div class="text-xs">${smiSignal}</div>
-                `;
-                
-                smiElement.className = `indicator-card ${
-                    smiSignal === 'AŞIRI SATIŞ' ? 'signal-bull' :
-                    smiSignal === 'AŞIRI ALIŞ' ? 'signal-bear' : 'signal-neutral'
-                }`;
-            }
-        }
+                // 1. PRICE X VWMA21 - Arz/Talep Bölgesi Belirleme
+                const vwma21 = this.calculateVWMA(closes, volumes, 21);
+                const lastVwma = vwma21[vwma21.length - 1];
+                if (currentPrice > lastVwma) {
+                    signals.push('✅ VWMA21 Üstü (Potansiyel Arz Bölgesi)');
+                    supplyZone = true;
+                    signalStrength++;
+                }
+                if (currentPrice < lastVwma) {
+                    signals.push('✅ VWMA21 Altı (Potansiyel Talep Bölgesi)');
+                    demandZone = true;
+                    signalStrength++;
+                }
 
-        function updateRSIHeatMap(rsi14, rsi21, rsi34) {
-            const heatMapElement = document.getElementById('rsiHeatMap');
+                // 2. RSI 21-34 Aşırı Alım/Satım Bandları
+                const rsi21 = this.calculateRSI(closes, 21);
+                const rsi34 = this.calculateRSI(closes, 34);
+                const lastRsi21 = rsi21[rsi21.length - 1];
+                const lastRsi34 = rsi34[rsi34.length - 1];
+                
+                if (lastRsi21 > 70 || lastRsi34 > 70) {
+                    signals.push('✅ RSI Aşırı Alım (>70) - Satım Bölgesi');
+                    supplyZone = true;
+                    signalStrength++;
+                }
+                if (lastRsi21 < 30 || lastRsi34 < 30) {
+                    signals.push('✅ RSI Aşırı Satım (<30) - Alım Bölgesi');
+                    demandZone = true;
+                    signalStrength++;
+                }
 
-            if (rsi14 && rsi21 && rsi34) {
-                const average = (rsi14 + rsi21 + rsi34) / 3;
-                const heatMapSignal = average < 30 ? 'AŞIRI SATIŞ' :
-                                     average > 70 ? 'AŞIRI ALIŞ' : 'NÖTR';
+                // 3. EMA8 X WMA34 Kesişim Analizi
+                const ema8 = this.calculateEMA(closes, 8);
+                const wma34 = this.calculateWMA(closes, 34);
+                const lastEma8 = ema8[ema8.length - 1];
+                const lastWma34 = wma34[wma34.length - 1];
+                const prevEma8 = ema8[ema8.length - 2];
+                const prevWma34 = wma34[wma34.length - 2];
                 
-                heatMapElement.innerHTML = `
-                    <div class="text-sm font-semibold">RSI Heat Map</div>
-                    <div class="text-lg font-bold">Avarage: ${average.toFixed(1)}</div>
-                    <div class="text-xs">${heatMapSignal}</div>
-                `;
-                
-                heatMapElement.className = `indicator-card ${
-                    heatMapSignal === 'AŞIRI SATIŞ' ? 'signal-bull' :
-                    heatMapSignal === 'AŞIRI ALIŞ' ? 'signal-bear' : 'signal-neutral'
-                }`;
-            }
-        }
+                // Bullish Crossover (Alım Sinyali)
+                if (lastEma8 > lastWma34 && prevEma8 <= prevWma34) {
+                    signals.push('✅ EMA8 > WMA34 (Yükseliş Kesişimi) - Alım Sinyali');
+                    demandZone = true;
+                    signalStrength++;
+                }
+                // Bearish Crossover (Satım Sinyali)
+                if (lastEma8 < lastWma34 && prevEma8 >= prevWma34) {
+                    signals.push('✅ EMA8 < WMA34 (Düşüş Kesişimi) - Satım Sinyali');
+                    supplyZone = true;
+                    signalStrength++;
+                }
 
-        // HTF-MTF-LTF Analysis update function
-        async function updateHTFMTFLTFAnalysis(swingLevels, supplyDemandZones, candlestickPatterns, imbalances) {
-            // HTF Analysis - Supply/Demand Zones
-            const supplyDemandElement = document.getElementById('supplyDemandZones');
-            if (supplyDemandZones.length > 0) {
-                const supplyZones = supplyDemandZones.filter(z => z.type === 'supply').slice(-2);
-                const demandZones = supplyDemandZones.filter(z => z.type === 'demand').slice(-2);
+                // 4. RSI Divergence - Tepe/Dip Uyumsuzluk
+                const divergence = this.checkRSIDivergence(rsi21, closes) || this.checkRSIDivergence(rsi34, closes);
+                if (divergence) {
+                    signals.push(`✅ RSI Uyumsuzluk: ${divergence}`);
+                    if (divergence.includes('Bearish')) {
+                        supplyZone = true;
+                        signalStrength++;
+                    }
+                    if (divergence.includes('Bullish')) {
+                        demandZone = true;
+                        signalStrength++;
+                    }
+                }
+
+                // 5. Camarilla Pivot Seviyeleri
+                const lastHigh = highs[highs.length - 1];
+                const lastLow = lows[lows.length - 1];
+                const lastClose = closes[closes.length - 1];
+                const pivots = this.calculateCamarillaPivots(lastHigh, lastLow, lastClose);
                 
-                let html = '';
-                supplyZones.forEach(zone => {
-                    html += `<div class="text-xs bg-red-500 bg-opacity-20 p-2 rounded mb-1">
-                        🔴 Arz: $${zone.bottom.toFixed(4)} - $${zone.top.toFixed(4)}
-                        <div class="text-xs opacity-75">Güç: ${zone.strength.toFixed(0)}</div>
-                    </div>`;
+                if (currentPrice > pivots.r4) {
+                    signals.push('✅ Camarilla R4 Üstü (Güçlü Arz Bölgesi)');
+                    supplyZone = true;
+                    signalStrength += 2; // R4 daha güçlü sinyal
+                }
+                else if (currentPrice > pivots.r3) {
+                    signals.push('✅ Camarilla R3 Üstü (Arz Bölgesi)');
+                    supplyZone = true;
+                    signalStrength++;
+                }
+                
+                if (currentPrice < pivots.s4) {
+                    signals.push('✅ Camarilla S4 Altı (Güçlü Talep Bölgesi)');
+                    demandZone = true;
+                    signalStrength += 2; // S4 daha güçlü sinyal
+                }
+                else if (currentPrice < pivots.s3) {
+                    signals.push('✅ Camarilla S3 Altı (Talep Bölgesi)');
+                    demandZone = true;
+                    signalStrength++;
+                }
+
+                // Sinyal Gücü Değerlendirmesi
+                let signalQuality = 'Zayıf';
+                if (signalStrength >= 2) signalQuality = 'Orta';
+                if (signalStrength >= 3) signalQuality = 'Güçlü';
+                if (signalStrength >= 4) signalQuality = 'Çok Güçlü';
+
+                // Update UI with indicators and signal strength
+                this.updateTechnicalIndicators({
+                    rsi21: lastRsi21,
+                    rsi34: lastRsi34,
+                    ema8: lastEma8,
+                    wma34: lastWma34,
+                    vwma21: lastVwma,
+                    pivots: pivots
                 });
-                demandZones.forEach(zone => {
-                    html += `<div class="text-xs bg-green-500 bg-opacity-20 p-2 rounded mb-1">
-                        🟢 Talep: $${zone.bottom.toFixed(4)} - $${zone.top.toFixed(4)}
-                        <div class="text-xs opacity-75">Güç: ${zone.strength.toFixed(0)}</div>
-                    </div>`;
+
+                // Update confluence analysis in UI
+                this.updateConfluenceAnalysis({
+                    signalStrength,
+                    signalQuality,
+                    supplyZone,
+                    demandZone,
+                    currentPrice,
+                    vwma21: lastVwma
                 });
-                supplyDemandElement.innerHTML = html;
+
+                return { 
+                    signals, 
+                    currentPrice, 
+                    pivots, 
+                    signalStrength, 
+                    signalQuality,
+                    supplyZone,
+                    demandZone
+                };
             }
 
-            // MTF Analysis - Fibonacci Levels
-            const fibElement = document.getElementById('fibLevels');
-            if (swingLevels) {
-                const fibLevels = calculateFibonacciLevels(swingLevels.high, swingLevels.low, true);
-                const importantLevels = fibLevels.filter(l => [0.382, 0.5, 0.618, 0.705, 0.786].includes(l.level));
-                
-                const html = importantLevels.map(level => 
-                    `<div class="flex justify-between">
-                        <span>${level.label}:</span>
-                        <span class="font-semibold">$${level.price.toFixed(4)}</span>
-                    </div>`
-                ).join('');
-                fibElement.innerHTML = html;
+            async generateLTFSignal(htfSignals, htfPrice, pivots) {
+                const candles = await this.fetchCandles(this.ltfInterval);
+                const closes = candles.map(c => c.close);
+                const currentPrice = closes[closes.length - 1];
 
-                // Fibonacci Extension hesaplama
-                const fibExtension = calculateFibonacciLevels(swingLevels.high, swingLevels.low, false);
-                const extLevels = fibExtension.filter(l => [1.618, 2.618].includes(l.level));
+                let action = '';
+                let entry = currentPrice;
+                let stopLoss, takeProfit;
+
+                if (htfSignals.some(s => s.includes('Arz') || s.includes('Aşırı Alım') || s.includes('Düşüş') || s.includes('Bearish'))) {
+                    action = 'SATIM';
+                    stopLoss = htfPrice * 1.02;
+                    takeProfit = htfPrice * 0.95;
+                } else if (htfSignals.some(s => s.includes('Talep') || s.includes('Aşırı Satım') || s.includes('Yükseliş') || s.includes('Bullish'))) {
+                    action = 'ALIM';
+                    stopLoss = htfPrice * 0.98;
+                    takeProfit = htfPrice * 1.05;
+                }
+
+                if (action) {
+                    const signalId = `${this.symbol}_${Date.now()}`;
+                    const signal = {
+                        id: signalId,
+                        type: action,
+                        symbol: this.symbol,
+                        entry: entry,
+                        stopLoss: stopLoss,
+                        takeProfit: takeProfit,
+                        reasons: htfSignals,
+                        timestamp: new Date(),
+                        status: 'pending' // pending, success, failed
+                    };
+
+                    // Start tracking this signal
+                    this.activeSignalsTracking.set(signalId, signal);
+                    this.stats.pending++;
+
+                    this.showSignal(signal);
+                    this.addToHistory(signal);
+                    this.updateStats(action);
+                    this.updatePerformanceUI();
+                }
+            }
+
+            // Signal tracking and performance calculation
+            async checkSignalPerformance() {
+                if (this.activeSignalsTracking.size === 0) return;
+
+                try {
+                    const currentCandles = await this.fetchCandles('1m');
+                    const currentPrice = currentCandles[currentCandles.length - 1].close;
+                    const high24h = Math.max(...currentCandles.slice(-1440).map(c => c.high));
+                    const low24h = Math.min(...currentCandles.slice(-1440).map(c => c.low));
+
+                    for (const [signalId, signal] of this.activeSignalsTracking) {
+                        if (signal.status !== 'pending') continue;
+
+                        let signalResult = null;
+                        let profitLoss = 0;
+
+                        if (signal.type === 'ALIM') {
+                            // Check if TP hit
+                            if (high24h >= signal.takeProfit) {
+                                signalResult = 'success';
+                                profitLoss = ((signal.takeProfit - signal.entry) / signal.entry) * 100;
+                            }
+                            // Check if SL hit
+                            else if (low24h <= signal.stopLoss) {
+                                signalResult = 'failed';
+                                profitLoss = ((signal.stopLoss - signal.entry) / signal.entry) * 100;
+                            }
+                        } else if (signal.type === 'SATIM') {
+                            // Check if TP hit (price goes down)
+                            if (low24h <= signal.takeProfit) {
+                                signalResult = 'success';
+                                profitLoss = ((signal.entry - signal.takeProfit) / signal.entry) * 100;
+                            }
+                            // Check if SL hit (price goes up)
+                            else if (high24h >= signal.stopLoss) {
+                                signalResult = 'failed';
+                                profitLoss = ((signal.entry - signal.stopLoss) / signal.entry) * 100;
+                            }
+                        }
+
+                        // Update signal status if result determined
+                        if (signalResult) {
+                            signal.status = signalResult;
+                            signal.profitLoss = profitLoss;
+                            signal.closedAt = new Date();
+
+                            // Update stats
+                            this.stats.pending--;
+                            if (signalResult === 'success') {
+                                this.stats.successful++;
+                            } else {
+                                this.stats.failed++;
+                            }
+                            this.stats.totalProfitLoss += profitLoss;
+
+                            // Calculate win rate
+                            const totalCompleted = this.stats.successful + this.stats.failed;
+                            this.stats.winRate = totalCompleted > 0 ? (this.stats.successful / totalCompleted) * 100 : 0;
+
+                            // Update signal in history
+                            this.updateSignalInHistory(signal);
+
+                            console.log(`Signal ${signalId} completed: ${signalResult} with ${profitLoss.toFixed(2)}% P&L`);
+                        }
+
+                        // Remove signals older than 24 hours if still pending
+                        const hoursSinceSignal = (Date.now() - signal.timestamp.getTime()) / (1000 * 60 * 60);
+                        if (hoursSinceSignal > 24 && signal.status === 'pending') {
+                            this.activeSignalsTracking.delete(signalId);
+                            this.stats.pending--;
+                            console.log(`Signal ${signalId} expired after 24 hours`);
+                        }
+                    }
+
+                    this.updatePerformanceUI();
+                } catch (error) {
+                    console.error('Error checking signal performance:', error);
+                }
+            }
+
+            updateSignalInHistory(signal) {
+                const container = document.getElementById('signalHistory');
+                const elements = container.querySelectorAll('.signal-history-item');
                 
-                if (extLevels.length > 0) {
-                    fibElement.innerHTML += '<div class="mt-2 pt-2 border-t border-gray-600 text-xs opacity-75">Extension:</div>';
-                    extLevels.forEach(level => {
-                        fibElement.innerHTML += `<div class="flex justify-between text-xs">
-                            <span>${level.label}:</span>
-                            <span>$${level.price.toFixed(4)}</span>
-                        </div>`;
+                elements.forEach(element => {
+                    if (element.dataset.signalId === signal.id) {
+                        const statusIcon = signal.status === 'success' ? '✅' : '❌';
+                        const statusClass = signal.status === 'success' ? 'text-binance-green' : 'text-binance-red';
+                        const plText = signal.profitLoss > 0 ? `+${signal.profitLoss.toFixed(2)}%` : `${signal.profitLoss.toFixed(2)}%`;
+                        
+                        element.innerHTML = `
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="font-medium text-sm ${signal.type === 'ALIM' ? 'text-binance-green' : 'text-binance-red'}">${signal.type} - ${signal.symbol} ${statusIcon}</span>
+                                <span class="text-xs text-gray-500">${signal.timestamp.toLocaleString()}</span>
+                            </div>
+                            <div class="text-xs text-gray-600 dark:text-gray-400">
+                                Giriş: ${signal.entry.toFixed(4)} | SL: ${signal.stopLoss.toFixed(4)} | TP: ${signal.takeProfit.toFixed(4)}
+                            </div>
+                            <div class="text-xs ${statusClass} mt-1">
+                                P&L: ${plText} | Durum: ${signal.status === 'success' ? 'Başarılı' : 'Başarısız'}
+                            </div>
+                        `;
+                    }
+                });
+            }
+
+            updatePerformanceUI() {
+                // Update performance stats
+                document.getElementById('successfulSignals').textContent = this.stats.successful;
+                document.getElementById('failedSignals').textContent = this.stats.failed;
+                document.getElementById('pendingSignals').textContent = this.stats.pending;
+                
+                // Update total P&L
+                const totalPLElement = document.getElementById('totalPL');
+                const plColor = this.stats.totalProfitLoss >= 0 ? 'text-binance-green' : 'text-binance-red';
+                const plSign = this.stats.totalProfitLoss >= 0 ? '+' : '';
+                totalPLElement.textContent = `${plSign}${this.stats.totalProfitLoss.toFixed(2)}%`;
+                totalPLElement.className = `font-medium ${plColor}`;
+                
+                // Update win rate circle
+                const winRatePercentage = document.getElementById('winRatePercentage');
+                const winRateCircle = document.getElementById('winRateCircle');
+                
+                winRatePercentage.textContent = `${Math.round(this.stats.winRate)}%`;
+                
+                // Calculate circle progress
+                const circumference = 2 * Math.PI * 30; // radius = 30
+                const offset = circumference - (this.stats.winRate / 100) * circumference;
+                winRateCircle.style.strokeDashoffset = offset;
+                
+                // Color based on win rate
+                if (this.stats.winRate >= 70) {
+                    winRateCircle.className = 'text-binance-green transition-all duration-500';
+                } else if (this.stats.winRate >= 50) {
+                    winRateCircle.className = 'text-primary transition-all duration-500';
+                } else {
+                    winRateCircle.className = 'text-binance-red transition-all duration-500';
+                }
+            }
+
+            // UI Updates
+            updateTechnicalIndicators(indicators) {
+                document.getElementById('rsi21').textContent = indicators.rsi21.toFixed(2);
+                document.getElementById('rsi34').textContent = indicators.rsi34.toFixed(2);
+                document.getElementById('ema8').textContent = indicators.ema8.toFixed(4);
+                document.getElementById('wma34').textContent = indicators.wma34.toFixed(4);
+                document.getElementById('vwma21').textContent = indicators.vwma21.toFixed(4);
+                document.getElementById('pivot').textContent = indicators.pivots.pivot.toFixed(4);
+
+                // Update pivot levels
+                document.getElementById('r4Level').textContent = indicators.pivots.r4.toFixed(4);
+                document.getElementById('r3Level').textContent = indicators.pivots.r3.toFixed(4);
+                document.getElementById('pivotLevel').textContent = indicators.pivots.pivot.toFixed(4);
+                document.getElementById('s3Level').textContent = indicators.pivots.s3.toFixed(4);
+                document.getElementById('s4Level').textContent = indicators.pivots.s4.toFixed(4);
+            }
+
+            async updateMarketData() {
+                try {
+                    const stats = await this.fetch24hrStats();
+                    const currentPrice = parseFloat(stats.lastPrice);
+                    const priceChange = parseFloat(stats.priceChangePercent);
+
+                    document.getElementById('currentPrice').textContent = currentPrice.toFixed(4);
+                    document.getElementById('volume24h').textContent = this.formatVolume(parseFloat(stats.volume));
+                    document.getElementById('high24h').textContent = parseFloat(stats.highPrice).toFixed(4);
+                    document.getElementById('low24h').textContent = parseFloat(stats.lowPrice).toFixed(4);
+
+                    // Price change indicator
+                    const changeElement = document.getElementById('priceChange');
+                    const arrowElement = document.getElementById('priceArrow');
+                    
+                    changeElement.textContent = `${priceChange > 0 ? '+' : ''}${priceChange.toFixed(2)}%`;
+                    
+                    if (priceChange > 0) {
+                        changeElement.className = 'text-sm font-medium text-binance-green';
+                        arrowElement.className = 'fas fa-arrow-up text-binance-green';
+                    } else if (priceChange < 0) {
+                        changeElement.className = 'text-sm font-medium text-binance-red';
+                        arrowElement.className = 'fas fa-arrow-down text-binance-red';
+                    } else {
+                        changeElement.className = 'text-sm font-medium text-gray-500';
+                        arrowElement.className = 'fas fa-minus text-gray-500';
+                    }
+
+                    this.updateConnectionStatus(true);
+                } catch (error) {
+                    console.error('Error updating market data:', error);
+                    this.updateConnectionStatus(false);
+                }
+            }
+
+            updateConnectionStatus(connected) {
+                const statusElement = document.getElementById('connectionStatus');
+                if (connected) {
+                    statusElement.innerHTML = `
+                        <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                        <span class="text-sm text-gray-600 dark:text-gray-400">Bağlı</span>
+                    `;
+                } else {
+                    statusElement.innerHTML = `
+                        <div class="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
+                        <span class="text-sm text-gray-600 dark:text-gray-400">Bağlantı Hatası</span>
+                    `;
+                }
+            }
+
+            formatVolume(volume) {
+                if (volume >= 1e9) return (volume / 1e9).toFixed(2) + 'B';
+                if (volume >= 1e6) return (volume / 1e6).toFixed(2) + 'M';
+                if (volume >= 1e3) return (volume / 1e3).toFixed(2) + 'K';
+                return volume.toFixed(2);
+            }
+
+            showSignal(signal) {
+                // Show modal
+                const modal = document.getElementById('signalModal');
+                const icon = document.getElementById('signalIcon');
+                const title = document.getElementById('signalTitle');
+                const message = document.getElementById('signalMessage');
+                const details = document.getElementById('signalDetails');
+
+                // Set signal type styling with Binance colors
+                if (signal.type === 'ALIM') {
+                    icon.className = 'w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-binance-green';
+                    icon.innerHTML = '<i class="fas fa-arrow-up text-2xl text-white"></i>';
+                    title.textContent = 'ALIM SİNYALİ!';
+                    title.className = 'text-xl font-bold mb-2 text-binance-green';
+                } else {
+                    icon.className = 'w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-binance-red';
+                    icon.innerHTML = '<i class="fas fa-arrow-down text-2xl text-white"></i>';
+                    title.textContent = 'SATIM SİNYALİ!';
+                    title.className = 'text-xl font-bold mb-2 text-binance-red';
+                }
+
+                message.textContent = `${signal.symbol} için ${signal.type.toLowerCase()} sinyali algılandı.`;
+
+                details.innerHTML = `
+                    <div class="text-sm space-y-1">
+                        <div class="flex justify-between"><span>Giriş:</span><span class="font-medium">${signal.entry.toFixed(4)}</span></div>
+                        <div class="flex justify-between"><span>Stop Loss:</span><span class="font-medium">${signal.stopLoss.toFixed(4)}</span></div>
+                        <div class="flex justify-between"><span>Take Profit:</span><span class="font-medium">${signal.takeProfit.toFixed(4)}</span></div>
+                        <div class="pt-2 border-t border-gray-200 dark:border-gray-600">
+                            <div class="text-xs text-gray-600 dark:text-gray-400">Sebepler:</div>
+                            ${signal.reasons.map(reason => `<div class="text-xs">• ${reason}</div>`).join('')}
+                        </div>
+                    </div>
+                `;
+
+                modal.classList.remove('hidden');
+
+                // Sound notification
+                if (document.getElementById('soundEnabled').checked) {
+                    this.playNotificationSound(signal.type);
+                }
+
+                // Push notification
+                if (document.getElementById('pushEnabled').checked && 'Notification' in window && Notification.permission === 'granted') {
+                    new Notification(`${signal.type} Sinyali - ${signal.symbol}`, {
+                        body: `Giriş: ${signal.entry.toFixed(4)}`,
+                        icon: signal.type === 'ALIM' ? '📈' : '📉'
                     });
                 }
+
+                // Update active signals
+                this.updateActiveSignals(signal);
             }
 
-            // LTF Analysis - Oscillator Signals & Patterns
-            const ltfElement = document.getElementById('oscillatorSignals');
-            let ltfHtml = '';
-            
-            if (candlestickPatterns.length > 0) {
-                ltfHtml += '<div class="text-xs font-semibold mb-1">Mum Formasyonları:</div>';
-                candlestickPatterns.forEach(pattern => {
-                    const patternName = {
-                        'bullish_pinbar': '🟢 Yükseliş Pinbar',
-                        'bearish_pinbar': '🔴 Düşüş Pinbar',
-                        'doji': '⚪ Doji',
-                        'bullish_engulfing': '🟢 Yükseliş Sarmalama'
-                    }[pattern.type] || pattern.type;
-                    
-                    ltfHtml += `<div class="text-xs bg-blue-500 bg-opacity-20 p-1 rounded mb-1">
-                        ${patternName} (${pattern.strength.toFixed(1)})
-                    </div>`;
-                });
-            }
-
-            if (imbalances.length > 0) {
-                ltfHtml += '<div class="text-xs font-semibold mb-1 mt-2">Imbalance Bölgeleri:</div>';
-                imbalances.slice(-3).forEach(imb => {
-                    ltfHtml += `<div class="text-xs bg-yellow-500 bg-opacity-20 p-1 rounded mb-1">
-                        📊 $${imb.start.toFixed(4)} - $${imb.end.toFixed(4)}
-                    </div>`;
-                });
-            }
-
-            if (ltfHtml === '') {
-                ltfHtml = '<div class="text-xs opacity-75">Sinyal bekleniyor...</div>';
-            }
-            
-            ltfElement.innerHTML = ltfHtml;
-        }
-
-        // Signal detection and alarm system
-        function checkSignals(rsi21, rsi34, ao, eom, smi, ema5, ema14, candlestickPatterns = [], supplyDemandZones = []) {
-            const now = Date.now();
-            if (now - lastSignalTime < 30000) return; // 30 saniye throttle
-
-            let signals = [];
-
-            // A01 Strategy signals
-            if (rsi21 && rsi34 && rsi21 < 34 && rsi34 < 34) {
-                signals.push('A01: RSI Aşırı Satış Sinyali');
-            }
-
-            if (ema5 && ema14 && ema5 > ema14) {
-                signals.push('A01: EMA Yukarı Kesişim');
-            }
-
-            // A02 Strategy signals
-            if (ao !== null && ao > 0) {
-                signals.push('A02: AO Pozitif Sinyal');
-            }
-
-            if (eom !== null && eom > 0) {
-                signals.push('A02: EOM Pozitif Sinyal');
-            }
-
-            // SMI signals
-            if (smi !== null && smi < -40) {
-                signals.push('SMI: Aşırı Satış Bölgesi');
-            }
-
-            // Candlestick Pattern signals
-            candlestickPatterns.forEach(pattern => {
-                if (pattern.strength > 2) {
-                    const patternSignal = {
-                        'bullish_pinbar': 'Pinbar: Yükseliş Sinyali',
-                        'bearish_pinbar': 'Pinbar: Düşüş Sinyali',
-                        'doji': 'Doji: Kararsızlık Sinyali',
-                        'bullish_engulfing': 'Engulfing: Yükseliş Sinyali'
-                    }[pattern.type];
-                    
-                    if (patternSignal) {
-                        signals.push(patternSignal);
-                    }
+            updateActiveSignals(signal) {
+                const container = document.getElementById('activeSignals');
+                
+                // Remove empty state
+                if (container.querySelector('.text-center')) {
+                    container.innerHTML = '';
                 }
-            });
 
-            // Supply/Demand Zone signals
-            const currentPrice = parseFloat(document.getElementById('currentPrice').textContent.replace('$', ''));
-            if (currentPrice > 0) {
-                supplyDemandZones.forEach(zone => {
-                    if (zone.type === 'supply' && currentPrice >= zone.bottom && currentPrice <= zone.top) {
-                        signals.push(`Arz Bölgesi: Fiyat arz bölgesinde! ($${zone.bottom.toFixed(4)} - $${zone.top.toFixed(4)})`);
+                const signalElement = document.createElement('div');
+                signalElement.className = `p-4 rounded-lg border-l-4 ${
+                    signal.type === 'ALIM' 
+                        ? 'bg-green-50 dark:bg-binance-green/10 border-binance-green' 
+                        : 'bg-red-50 dark:bg-binance-red/10 border-binance-red'
+                }`;
+                
+                signalElement.innerHTML = `
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-medium ${signal.type === 'ALIM' ? 'text-binance-green' : 'text-binance-red'}">${signal.type}</span>
+                        <span class="text-xs text-gray-500">${signal.timestamp.toLocaleTimeString()}</span>
+                    </div>
+                    <div class="text-sm space-y-1">
+                        <div>Giriş: <span class="font-medium">${signal.entry.toFixed(4)}</span></div>
+                        <div>SL: <span class="font-medium">${signal.stopLoss.toFixed(4)}</span></div>
+                        <div>TP: <span class="font-medium">${signal.takeProfit.toFixed(4)}</span></div>
+                    </div>
+                `;
+                
+                container.appendChild(signalElement);
+
+                // Remove signal after 5 minutes
+                setTimeout(() => {
+                    if (signalElement.parentNode) {
+                        signalElement.remove();
+                        if (container.children.length === 0) {
+                            container.innerHTML = `
+                                <div class="text-center text-gray-500 dark:text-gray-400 py-8">
+                                    <i class="fas fa-search text-2xl mb-2"></i>
+                                    <p>Sinyal bekleniyor...</p>
+                                </div>
+                            `;
+                        }
                     }
-                    if (zone.type === 'demand' && currentPrice >= zone.bottom && currentPrice <= zone.top) {
-                        signals.push(`Talep Bölgesi: Fiyat talep bölgesinde! ($${zone.bottom.toFixed(4)} - $${zone.top.toFixed(4)})`);
-                    }
-                });
+                }, 300000);
             }
 
-            if (signals.length > 0 && alarmEnabled) {
-                showAlarm(signals);
-                addToSignalHistory(signals);
-                lastSignalTime = now;
-            }
-        }
+            addToHistory(signal) {
+                const container = document.getElementById('signalHistory');
+                
+                // Remove empty state
+                if (container.querySelector('.text-center')) {
+                    container.innerHTML = '';
+                }
 
-        function showAlarm(signals) {
-            const alarmPanel = document.getElementById('alarmPanel');
-            const alarmMessage = document.getElementById('alarmMessage');
-            
-            alarmMessage.innerHTML = signals.map(signal => 
-                `<div class="alarm-active">🚨 ${signal}</div>`
-            ).join('');
-            
-            alarmPanel.classList.remove('hidden');
-            alarmPanel.classList.add('alarm-active');
-            
-            // Play sound (if browser allows)
-            try {
-                const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEATIEAAASCCQACAQ...');
-                audio.play().catch(() => {});
-            } catch (e) {}
-            
-            // Hide alarm after 10 seconds
-            setTimeout(() => {
-                alarmPanel.classList.add('hidden');
-                alarmPanel.classList.remove('alarm-active');
-            }, 10000);
-        }
+                const historyElement = document.createElement('div');
+                historyElement.className = 'p-3 bg-gray-50 dark:bg-gray-700 rounded-lg';
+                
+                historyElement.innerHTML = `
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="font-medium text-sm ${signal.type === 'ALIM' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}">${signal.type} - ${signal.symbol}</span>
+                        <span class="text-xs text-gray-500">${signal.timestamp.toLocaleString()}</span>
+                    </div>
+                    <div class="text-xs text-gray-600 dark:text-gray-400">
+                        Giriş: ${signal.entry.toFixed(4)} | SL: ${signal.stopLoss.toFixed(4)} | TP: ${signal.takeProfit.toFixed(4)}
+                    </div>
+                `;
+                
+                container.insertBefore(historyElement, container.firstChild);
 
-        function addToSignalHistory(signals) {
-            const historyElement = document.getElementById('signalHistory');
-            const timestamp = new Date().toLocaleTimeString();
-            
-            signals.forEach(signal => {
-                const signalDiv = document.createElement('div');
-                signalDiv.className = 'text-sm p-2 bg-blue-500 bg-opacity-20 rounded mb-2';
-                signalDiv.innerHTML = `<span class="font-bold">${timestamp}</span> - ${signal}`;
-                historyElement.insertBefore(signalDiv, historyElement.firstChild);
-            });
-            
-            // Keep only last 20 signals
-            while (historyElement.children.length > 20) {
-                historyElement.removeChild(historyElement.lastChild);
-            }
-        }
-
-        // BTC trend analysis
-        async function updateBTCAnalysis() {
-            if (currentSymbol !== 'BTCUSDT') {
-                const btcTicker = await fetch24hrTicker('BTCUSDT');
-                if (btcTicker) {
-                    const btcPrice = parseFloat(btcTicker.lastPrice);
-                    const btcChange = parseFloat(btcTicker.priceChangePercent);
-                    
-                    document.getElementById('btcPrice').textContent = `$${btcPrice.toLocaleString()}`;
-                    document.getElementById('btcTrend').textContent = 
-                        `${btcChange >= 0 ? '📈' : '📉'} %${btcChange.toFixed(2)}`;
-                    
-                    const btcAnalysis = document.getElementById('btcAnalysis');
-                    btcAnalysis.className = btcChange >= 0 ? 'text-center text-green-400' : 'text-center text-red-400';
+                // Keep only last 50 signals
+                while (container.children.length > 50) {
+                    container.removeChild(container.lastChild);
                 }
             }
+
+            updateConfluenceAnalysis(data) {
+                const { signalStrength, signalQuality, supplyZone, demandZone } = data;
+                
+                // Update signal strength
+                document.getElementById('signalStrengthScore').textContent = signalStrength;
+                document.getElementById('signalQuality').textContent = signalQuality;
+                
+                // Update progress bar
+                const percentage = Math.min((signalStrength / 5) * 100, 100);
+                const progressBar = document.getElementById('signalStrengthBar');
+                progressBar.style.width = `${percentage}%`;
+                
+                // Color based on strength
+                if (signalStrength === 0) {
+                    progressBar.className = 'h-3 rounded-full transition-all duration-500 bg-gray-400';
+                    document.getElementById('signalQuality').className = 'text-sm font-medium text-gray-500';
+                } else if (signalStrength < 2) {
+                    progressBar.className = 'h-3 rounded-full transition-all duration-500 bg-red-400';
+                    document.getElementById('signalQuality').className = 'text-sm font-medium text-red-500';
+                } else if (signalStrength < 3) {
+                    progressBar.className = 'h-3 rounded-full transition-all duration-500 bg-yellow-400';
+                    document.getElementById('signalQuality').className = 'text-sm font-medium text-yellow-600';
+                } else if (signalStrength < 4) {
+                    progressBar.className = 'h-3 rounded-full transition-all duration-500 bg-primary';
+                    document.getElementById('signalQuality').className = 'text-sm font-medium text-primary';
+                } else {
+                    progressBar.className = 'h-3 rounded-full transition-all duration-500 bg-binance-green';
+                    document.getElementById('signalQuality').className = 'text-sm font-medium text-binance-green';
+                }
+                
+                // Update zone cards
+                const supplyCard = document.getElementById('supplyZoneCard');
+                const demandCard = document.getElementById('demandZoneCard');
+                
+                if (supplyZone) {
+                    supplyCard.className = 'p-3 rounded-lg border text-center bg-red-50 dark:bg-binance-red/10 border-binance-red transform scale-105 transition-all';
+                    supplyCard.style.opacity = '1';
+                } else {
+                    supplyCard.className = 'p-3 rounded-lg border text-center opacity-50 transition-all';
+                }
+                
+                if (demandZone) {
+                    demandCard.className = 'p-3 rounded-lg border text-center bg-green-50 dark:bg-binance-green/10 border-binance-green transform scale-105 transition-all';
+                    demandCard.style.opacity = '1';
+                } else {
+                    demandCard.className = 'p-3 rounded-lg border text-center opacity-50 transition-all';
+                }
+            }
+
+            updateStats(signalType) {
+                this.stats.total++;
+                if (signalType === 'ALIM') this.stats.buy++;
+                else this.stats.sell++;
+
+                document.getElementById('totalSignals').textContent = this.stats.total;
+                document.getElementById('buySignals').textContent = this.stats.buy;
+                document.getElementById('sellSignals').textContent = this.stats.sell;
+            }
+
+            playNotificationSound(signalType) {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const frequency = signalType === 'ALIM' ? 800 : 400;
+                
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = frequency;
+                oscillator.type = 'sine';
+                
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.5);
+            }
+
+            requestNotificationPermission() {
+                if ('Notification' in window && Notification.permission === 'default') {
+                    Notification.requestPermission();
+                }
+            }
+
+            updateUptime() {
+                if (!this.startTime) return;
+                
+                const elapsed = Date.now() - this.startTime;
+                const hours = Math.floor(elapsed / 3600000);
+                const minutes = Math.floor((elapsed % 3600000) / 60000);
+                const seconds = Math.floor((elapsed % 60000) / 1000);
+                
+                document.getElementById('uptime').textContent = 
+                    `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+
+            // Main Bot Loop
+            async runScanCycle() {
+                try {
+                    await this.updateMarketData();
+                    
+                    // Check performance of existing signals
+                    await this.checkSignalPerformance();
+                    
+                    const htfData = await this.checkHTFSignals();
+                    if (htfData.signals.length > 0) {
+                        console.log(`HTF Sinyalleri: ${htfData.signals.join(', ')}`);
+                        if (htfData.signals.length > 1) {
+                            console.log('Güçlü Sinyal! Birden fazla eşleşme.');
+                        }
+                        await this.generateLTFSignal(htfData.signals, htfData.currentPrice, htfData.pivots);
+                    }
+                    
+                    document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+                } catch (error) {
+                    console.error('Scan cycle error:', error);
+                }
+            }
+
+            start() {
+                if (this.isRunning) return;
+                
+                this.symbol = document.getElementById('symbolInput').value.toUpperCase() || 'BTCUSDT';
+                this.interval = parseInt(document.getElementById('intervalSelect').value) * 1000;
+                
+                this.isRunning = true;
+                this.startTime = Date.now();
+                
+                // Update UI
+                document.getElementById('toggleBot').innerHTML = '<i class="fas fa-stop mr-2"></i>Botu Durdur';
+                document.getElementById('toggleBot').className = 'w-full px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-opacity-90 transition-all duration-200 font-medium flex items-center justify-center space-x-2';
+                
+                // Start intervals
+                this.intervalId = setInterval(() => this.runScanCycle(), this.interval);
+                this.uptimeInterval = setInterval(() => this.updateUptime(), 1000);
+                
+                // Run initial scan
+                this.runScanCycle();
+                
+                console.log(`Bot started for ${this.symbol} with ${this.interval/1000}s interval`);
+            }
+
+            stop() {
+                if (!this.isRunning) return;
+                
+                this.isRunning = false;
+                this.startTime = null;
+                
+                if (this.intervalId) {
+                    clearInterval(this.intervalId);
+                    this.intervalId = null;
+                }
+                
+                if (this.uptimeInterval) {
+                    clearInterval(this.uptimeInterval);
+                    this.uptimeInterval = null;
+                }
+                
+                // Update UI
+                document.getElementById('toggleBot').innerHTML = '<i class="fas fa-play mr-2"></i>Botu Başlat';
+                document.getElementById('toggleBot').className = 'w-full px-6 py-3 bg-primary text-white rounded-lg hover:bg-opacity-90 transition-all duration-200 font-medium flex items-center justify-center space-x-2';
+                document.getElementById('uptime').textContent = '00:00:00';
+                
+                this.updateConnectionStatus(false);
+                
+                console.log('Bot stopped');
+            }
+
+            initializeEventListeners() {
+                // Toggle bot
+                document.getElementById('toggleBot').addEventListener('click', () => {
+                    if (this.isRunning) {
+                        this.stop();
+                    } else {
+                        this.start();
+                    }
+                });
+
+                // Clear history
+                document.getElementById('clearHistory').addEventListener('click', () => {
+                    document.getElementById('signalHistory').innerHTML = `
+                        <div class="text-center text-gray-500 dark:text-gray-400 py-4">
+                            <p class="text-sm">Henüz sinyal geçmişi yok</p>
+                        </div>
+                    `;
+                });
+
+                // Modal close buttons
+                document.getElementById('closeSignalModal').addEventListener('click', () => {
+                    document.getElementById('signalModal').classList.add('hidden');
+                });
+                
+                document.getElementById('ackSignalModal').addEventListener('click', () => {
+                    document.getElementById('signalModal').classList.add('hidden');
+                });
+
+                // Symbol input validation
+                document.getElementById('symbolInput').addEventListener('input', (e) => {
+                    e.target.value = e.target.value.toUpperCase().replace(/[^A-Z]/g, '');
+                });
+
+                // Chart controls
+                document.getElementById('chartTimeframe').addEventListener('change', () => {
+                    this.updateTradingViewChart();
+                });
+
+                document.getElementById('refreshChart').addEventListener('click', () => {
+                    this.updateTradingViewChart();
+                });
+
+                // Initialize TradingView chart
+                this.initializeTradingViewChart();
+            }
+
+            // TradingView Chart Functions
+            convertSymbolToTradingView(binanceSymbol) {
+                // Convert Binance symbols to TradingView format
+                const symbolMappings = {
+                    'BTCUSDT': 'BINANCE:BTCUSDT',
+                    'ETHUSDT': 'BINANCE:ETHUSDT',
+                    'BNBUSDT': 'BINANCE:BNBUSDT',
+                    'ADAUSDT': 'BINANCE:ADAUSDT',
+                    'DOTUSDT': 'BINANCE:DOTUSDT',
+                    'LINKUSDT': 'BINANCE:LINKUSDT',
+                    'LTCUSDT': 'BINANCE:LTCUSDT',
+                    'BCHUSDT': 'BINANCE:BCHUSDT',
+                    'XLMUSDT': 'BINANCE:XLMUSDT',
+                    'UNIUSDT': 'BINANCE:UNIUSDT',
+                    'DOGEUSDT': 'BINANCE:DOGEUSDT',
+                    'AVAXUSDT': 'BINANCE:AVAXUSDT',
+                    'SOLUSDT': 'BINANCE:SOLUSDT',
+                    'MATICUSDT': 'BINANCE:MATICUSDT'
+                };
+                
+                return symbolMappings[binanceSymbol] || `BINANCE:${binanceSymbol}`;
+            }
+
+            initializeTradingViewChart() {
+                const isDark = document.documentElement.classList.contains('dark');
+                const timeframe = document.getElementById('chartTimeframe').value;
+                const tvSymbol = this.convertSymbolToTradingView(this.symbol);
+
+                const script = document.createElement('script');
+                script.type = 'text/javascript';
+                script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
+                script.async = true;
+                script.innerHTML = JSON.stringify({
+                    "autosize": true,
+                    "symbol": tvSymbol,
+                    "interval": timeframe,
+                    "timezone": "Europe/Istanbul",
+                    "theme": isDark ? "dark" : "light",
+                    "style": "1",
+                    "locale": "tr",
+                    "toolbar_bg": isDark ? "#1E2329" : "#f1f3f6",
+                    "enable_publishing": false,
+                    "backgroundColor": isDark ? "#1E2329" : "#ffffff",
+                    "gridColor": isDark ? "rgba(255, 255, 255, 0.06)" : "rgba(46, 46, 46, 0.06)",
+                    "allow_symbol_change": true,
+                    "watchlist": [
+                        "BINANCE:BTCUSDT",
+                        "BINANCE:ETHUSDT",
+                        "BINANCE:BNBUSDT",
+                        "BINANCE:ADAUSDT",
+                        "BINANCE:DOGEUSDT"
+                    ],
+                    "details": false,
+                    "hotlist": false,
+                    "calendar": false,
+                    "studies": [
+                        "RSI@tv-basicstudies",
+                        "MASimple@tv-basicstudies",
+                        "VWMA@tv-basicstudies"
+                    ],
+                    "hide_legend": false,
+                    "hide_side_toolbar": false,
+                    "hide_top_toolbar": false,
+                    "save_image": false,
+                    "container_id": "tradingview_chart"
+                });
+
+                // Clear existing chart
+                const chartContainer = document.getElementById('tradingview_chart');
+                chartContainer.innerHTML = `
+                    <div class="tradingview-widget-container__widget" style="height:calc(100% - 32px);width:100%"></div>
+                    <div class="tradingview-widget-copyright">
+                        <a href="https://www.tradingview.com/" rel="noopener nofollow" target="_blank">
+                            <span class="text-xs text-gray-500">Powered by TradingView</span>
+                        </a>
+                    </div>
+                `;
+
+                // Add new script
+                chartContainer.querySelector('.tradingview-widget-container__widget').appendChild(script);
+            }
+
+            updateTradingViewChart() {
+                this.initializeTradingViewChart();
+            }
         }
 
-        // Event listeners
-        document.getElementById('symbolSelect').addEventListener('change', (e) => {
-            currentSymbol = e.target.value;
-            document.getElementById('currentSymbol').textContent = currentSymbol;
-            connectWebSocket();
-            updateIndicators();
+        // Initialize the bot when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            const bot = new BinanceSignalBot();
+            window.signalBot = bot; // Make available globally for debugging
         });
-
-        document.querySelectorAll('.timeframe-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                document.querySelectorAll('.timeframe-btn').forEach(b => b.classList.remove('active'));
-                e.target.classList.add('active');
-                currentTimeframe = e.target.dataset.tf;
-                updateIndicators();
-            });
-        });
-
-        document.getElementById('alarmToggle').addEventListener('click', (e) => {
-            alarmEnabled = !alarmEnabled;
-            e.target.innerHTML = alarmEnabled ? 
-                '<i class="fas fa-bell mr-2"></i>Alarm: AÇIK' :
-                '<i class="fas fa-bell-slash mr-2"></i>Alarm: KAPALI';
-            e.target.className = alarmEnabled ? 
-                'bg-green-500 text-white px-4 py-2 rounded-lg mr-4 font-semibold' :
-                'bg-yellow-500 text-black px-4 py-2 rounded-lg mr-4 font-semibold';
-        });
-
-        // Initialize application
-        async function initialize() {
-            initializeChart();
-            connectWebSocket();
-            await updateIndicators();
-            await updateBTCAnalysis();
-            
-            // Update indicators every 10 seconds
-            setInterval(updateIndicators, 10000);
-            
-            // Update BTC analysis every 30 seconds
-            setInterval(updateBTCAnalysis, 30000);
-        }
-
-        // Start the application
-        initialize();
     </script>
 </body>
 </html>
